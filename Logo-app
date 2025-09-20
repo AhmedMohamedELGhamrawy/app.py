@@ -1,0 +1,58 @@
+import streamlit as st
+from PIL import Image
+import io
+
+st.title("برنامج إضافة اللوجو على الصور")
+
+# رفع الصور
+uploaded_images = st.file_uploader("اختر صور (يمكنك اختيار أكثر من صورة)", type=["jpg", "png"], accept_multiple_files=True)
+
+# رفع اللوجو
+uploaded_logo = st.file_uploader("اختر اللوجو", type=["jpg", "png"])
+
+# اختيار مكان اللوجو
+position = st.selectbox("مكان اللوجو:", ["أسفل يمين", "أسفل يسار", "أعلى يمين", "أعلى يسار"])
+
+# اختيار حجم اللوجو كنسبة من عرض الصورة
+scale = st.slider("حجم اللوجو نسبة من عرض الصورة (%)", 5, 30, 20)
+
+if st.button("ابدأ"):
+    if uploaded_images and uploaded_logo:
+        logo = Image.open(uploaded_logo).convert("RGBA")
+        
+        for uploaded_file in uploaded_images:
+            img = Image.open(uploaded_file).convert("RGBA")
+
+            # تغيير حجم اللوجو حسب النسبة
+            logo_width = int(img.width * (scale / 100))
+            resized_logo = logo.resize((logo_width, int(logo_width * logo.height / logo.width)))
+
+            # تحديد مكان اللوجو
+            margin = 10
+            if position == "أسفل يمين":
+                pos = (img.width - resized_logo.width - margin, img.height - resized_logo.height - margin)
+            elif position == "أسفل يسار":
+                pos = (margin, img.height - resized_logo.height - margin)
+            elif position == "أعلى يمين":
+                pos = (img.width - resized_logo.width - margin, margin)
+            else:  # أعلى يسار
+                pos = (margin, margin)
+
+            # دمج الصورة مع اللوجو
+            img.paste(resized_logo, pos, resized_logo)
+
+            # عرض النتيجة
+            st.image(img, caption=f"الصورة بعد إضافة اللوجو: {uploaded_file.name}", use_column_width=True)
+
+            # زر تحميل
+            buf = io.BytesIO()
+            img.save(buf, format="PNG")
+            byte_im = buf.getvalue()
+            st.download_button(
+                label=f"تحميل {uploaded_file.name}",
+                data=byte_im,
+                file_name=f"logo_{uploaded_file.name}",
+                mime="image/png"
+            )
+    else:
+        st.error("رجاءً اختر صور ولوجو أولاً.")
