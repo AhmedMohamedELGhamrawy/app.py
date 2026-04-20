@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>⚡ n8n Triggers Explorer</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0D0D1A;font-family:'Cairo','Segoe UI',sans-serif;color:#E0E0F0;min-height:100vh}
+button{font-family:inherit;cursor:pointer}
+input{font-family:inherit}
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:#1A1A2E}
+::-webkit-scrollbar-thumb{background:#3A3A5A;border-radius:4px}
+</style>
+</head>
+<body>
+<script>
+// Suppress browser warnings from in-browser transpiler
+(function(){
+  const originalWarn = console.warn;
+  const originalError = console.error;
+  const originalLog = console.log;
+  const suppress = ['in-browser', 'Babel', 'babel', 'transpil', 'Consider using'];
+  console.warn = function(...args){
+    if(args.some(a => suppress.some(s => String(a).includes(s)))) return;
+    originalWarn.apply(console, args);
+  };
+  console.error = function(...args){
+    if(args.some(a => suppress.some(s => String(a).includes(s)))) return;
+    originalError.apply(console, args);
+  };
+})();
+</script>
+<script>
+// Hide all non-critical console output
+window.__origConsole = {w: console.warn, e: console.error};
+const HIDE = ['in-browser Babel','Consider using','@babel','Browserslist'];
+['warn','error'].forEach(m => {
+  const orig = console[m].bind(console);
+  console[m] = (...a) => { if(!a.some(x=>HIDE.some(h=>String(x).includes(h)))) orig(...a); };
+});
+</script>
+<div id="root"></div>
+<script type="text/babel">
+const {useState} = React;
+
+const TC={Webhook:"#4ECDC4",Polling:"#F39C12",Realtime:"#E74C3C",Internal:"#9B59B6"};
+const CC={Core:"#FF6B35",Email:"#EA4335",Messaging:"#0088CC",CRM:"#FF9500",PM:"#4ECDC4",eCommerce:"#2ECC71",Dev:"#6e5494",Queue:"#FF6600",IoT:"#27AE60",Google:"#4285F4",Storage:"#8E44AD",Forms:"#45B7D1",Support:"#E74C3C",Social:"#E91E63",Database:"#009688",Marketing:"#FF5722",Calendar:"#3F51B5",HR:"#795548",Finance:"#4CAF50"};
+const dc=d=>(d==="سهل"||d==="Easy")?"#2ECC71":(d==="متوسط"||d==="Medium")?"#F39C12":"#E74C3C";
+const cc=t=>CC[t.cat]||"#888";
+
+const L={
+ar:{dir:"rtl",title:"⚡ n8n Triggers Explorer",sub:"اضغط على أي trigger للشرح 🚀",explore:"📋 استكشف",quiz:"🧠 اختبر نفسك",all:"الكل",favs:"⭐ المفضلة",search:"🔍 ابحث...",back:"← رجوع",compare:"قارن",what:"📌 ما هو؟",when:"🎯 متى تستخدمه؟",examples:"💡 أمثلة عملية",tip:"نصيحة مهمة",filterDiff:"📊 الصعوبة",filterType:"🔌 النوع",diffAll:"الكل",easy:"🟢 سهل",medium:"🟡 متوسط",hard:"🔴 متقدم",noFavs:"مفيش مفضلة لسه!",addFavs:"اضغط ⭐ على أي trigger",compareLabel:"⚖️ مقارنة:",cat:"الفئة",type:"النوع",diff:"الصعوبة",quizTitle:"اختبر معلوماتك",quizSub:"15 سؤال اختيار من متعدد 🎯",startQuiz:"ابدأ الاختبار 🚀",newQuiz:"🔄 اختبار جديد",reviewTitle:"مراجعة الإجابات:",correct:"✓ الصح:",s0:"استمر في التعلم!",s5:"مش بطال!",s8:"كويس جداً!",s12:"ممتاز!",opts:["أ","ب","ج","د"],
+TN:{Webhook:"Webhook",Polling:"Polling",Realtime:"Real-time",Internal:"داخلي"},
+CN:{Core:"أساسي",Email:"إيميل",Messaging:"مراسلة",CRM:"CRM",PM:"مشاريع",eCommerce:"تجارة إلكترونية",Dev:"برمجة",Queue:"طوابير",IoT:"إنترنت الأشياء",Google:"Google",Storage:"تخزين",Forms:"نماذج",Support:"دعم عملاء",Social:"سوشيال",Database:"قواعد بيانات",Marketing:"تسويق",Calendar:"تقويم",HR:"موارد بشرية",Finance:"مالية"},
+LN:{سهل:"سهل",متوسط:"متوسط",متقدم:"متقدم",Easy:"سهل",Medium:"متوسط",Advanced:"متقدم"}},
+en:{dir:"ltr",title:"⚡ n8n Triggers Explorer",sub:"Click any trigger to learn more 🚀",explore:"📋 Explore",quiz:"🧠 Quiz",all:"All",favs:"⭐ Favorites",search:"🔍 Search...",back:"← Back",compare:"Compare",what:"📌 What is it?",when:"🎯 When to use?",examples:"💡 Examples",tip:"Important tip",filterDiff:"📊 Difficulty",filterType:"🔌 Type",diffAll:"All",easy:"🟢 Easy",medium:"🟡 Medium",hard:"🔴 Advanced",noFavs:"No favorites yet!",addFavs:"Click ⭐ on any trigger",compareLabel:"⚖️ Compare:",cat:"Category",type:"Type",diff:"Difficulty",quizTitle:"Test your knowledge",quizSub:"15 multiple choice questions 🎯",startQuiz:"Start Quiz 🚀",newQuiz:"🔄 New Quiz",reviewTitle:"Review answers:",correct:"✓ Correct:",s0:"Keep learning!",s5:"Not bad!",s8:"Very good!",s12:"Excellent!",opts:["A","B","C","D"],
+TN:{Webhook:"Webhook",Polling:"Polling",Realtime:"Real-time",Internal:"Internal"},
+CN:{Core:"Core",Email:"Email",Messaging:"Messaging",CRM:"CRM",PM:"Project Mgmt",eCommerce:"eCommerce",Dev:"Dev",Queue:"Queue",IoT:"IoT",Google:"Google",Storage:"Storage",Forms:"Forms",Support:"Support",Social:"Social",Database:"Database",Marketing:"Marketing",Calendar:"Calendar",HR:"HR",Finance:"Finance"},
+LN:{سهل:"Easy",متوسط:"Medium",متقدم:"Advanced",Easy:"Easy",Medium:"Medium",Advanced:"Advanced"}}
+};
+
+const T = [
+{id:"webhook",name:"Webhook Trigger",cat:"Core",icon:"🔗",type:"Webhook",ar:{short:"استقبال HTTP requests من أي مكان",w:"بيخليك تستقبل HTTP requests من أي تطبيق خارجي. بيديك URL فريد لما حد يبعت request عليه الـ workflow بتشتغل فوراً.",u:"لما تطبيق خارجي عايز يبعتلك بيانات زي Stripe أو GitHub أو أي service.",e:["استقبال إشعارات دفع من Stripe","تنبيهات GitHub عند push","ربط أي API خارجي بـ n8n"],t:"استخدم Test URL في التطوير وProduction URL بعد النشر. أمّن الـ endpoint دايماً.",lvl:"سهل"},en:{short:"Receive HTTP requests from anywhere",w:"Lets you receive HTTP requests from any external app. Gives you a unique URL — when someone sends a request, the workflow runs instantly.",u:"When an external service wants to send you data like Stripe or GitHub.",e:["Receive Stripe payment notifications","GitHub alerts on push","Connect any external API to n8n"],t:"Use Test URL during development and Production URL after publishing. Always secure your endpoint.",lvl:"Easy"}},
+{id:"schedule",name:"Schedule Trigger",cat:"Core",icon:"⏰",type:"Internal",ar:{short:"تشغيل الـ workflow بجدول زمني",w:"بيشغّل الـ workflow تلقائياً في أوقات محددة عبر CRON expressions — كل دقيقة، ساعة، يوم، أو أسبوع.",u:"لأي مهمة محتاج تتكرر بانتظام زي تقارير يومية أو مزامنة بيانات.",e:["تقرير مبيعات كل يوم الساعة 8 صباحاً","مزامنة بيانات العملاء كل ساعة","ملخص أسبوعي للتيم"],t:"n8n بيستخدم UTC افتراضياً — تأكد من ضبط الـ Timezone الصح.",lvl:"سهل"},en:{short:"Run workflow on a time schedule",w:"Automatically triggers the workflow at specific times using CRON expressions — every minute, hour, day, or week.",u:"For any task that needs to repeat regularly like daily reports or data sync.",e:["Sales report every day at 8am","Sync customer data every hour","Weekly team summary every Monday"],t:"n8n uses UTC by default — make sure to set the correct Timezone.",lvl:"Easy"}},
+{id:"manual",name:"Manual Trigger",cat:"Core",icon:"👆",type:"Internal",ar:{short:"تشغيل يدوي من واجهة n8n",w:"أبسط trigger في n8n. بيشغّل الـ workflow بضغطة زرار من داخل editor بدون أي trigger خارجي.",u:"في التطوير والاختبار، أو للمهام اللي عايز تشغّلها بنفسك عند الحاجة.",e:["اختبار workflow جديد قبل النشر","مهمة نقل بيانات لمرة واحدة","workflows للأدمن عند الحاجة"],t:"ممتاز للـ testing لكن في الـ production استبدله بـ trigger حقيقي.",lvl:"سهل"},en:{short:"Manually trigger from n8n editor",w:"The simplest trigger in n8n. Runs the workflow with a button click from inside the editor.",u:"For development, testing, or tasks you want to run yourself on demand.",e:["Test a new workflow before publishing","One-time data migration","Admin-only on-demand workflows"],t:"Great for testing but replace with a real trigger in production.",lvl:"Easy"}},
+{id:"form",name:"Form Trigger",cat:"Core",icon:"📋",type:"Webhook",ar:{short:"تشغيل عند إرسال form",w:"بيعمل صفحة form جاهزة تشاركها. لما حد يملّاها ويبعتها الـ workflow بتشتغل ببياناتها تلقائياً.",u:"لجمع بيانات من ناس من غير ما تعمل موقع. مثالي لاستبيانات وطلبات.",e:["فورم تسجيل يضيف للـ Notion","طلب دعم فني يعمل ticket في Trello","استبيان عملاء يحفظ في Google Sheets"],t:"تقدر تضيف صفحات متعددة باستخدام n8n Form node بعد الـ trigger.",lvl:"سهل"},en:{short:"Trigger when a form is submitted",w:"Creates a ready-made form page to share. When someone fills it out and submits, the workflow runs with their data.",u:"To collect data without building a website. Ideal for surveys and requests.",e:["Registration form adds to Notion","Support request creates Trello ticket","Customer survey saves to Google Sheets"],t:"You can add multiple pages using the n8n Form node after the trigger.",lvl:"Easy"}},
+{id:"chat",name:"Chat Trigger",cat:"Core",icon:"💬",type:"Webhook",ar:{short:"استقبال رسائل chatbot / AI agent",w:"مخصص للـ AI agents في n8n — بيعمل واجهة chat أو يستقبل رسائل ويمررها للـ AI ويرجع الردود.",u:"لما بتبني AI agent أو chatbot باستخدام n8n.",e:["customer service bot يرد على العملاء","AI assistant للإجابة عن أسئلة","chatbot داخلي للموظفين"],t:"بيحتفظ بـ memory المحادثة لو ضبطت الـ session ID صح.",lvl:"متوسط"},en:{short:"Receive chatbot / AI agent messages",w:"Designed for AI agents in n8n — creates a chat interface or receives messages and passes them to the AI, returning responses.",u:"When building an AI agent or chatbot using n8n.",e:["Customer service bot that replies","AI assistant for questions","Internal employee chatbot"],t:"Maintains conversation memory if you configure the session ID correctly.",lvl:"Medium"}},
+{id:"error",name:"Error Trigger",cat:"Core",icon:"🚨",type:"Internal",ar:{short:"يشتغل لما يحصل error في workflow",w:"بيشتغل تلقائياً لما أي workflow تاني في نفس الـ n8n instance يفشل — لبناء نظام مراقبة مركزي.",u:"لبناء error handling مركزي يراقب كل الـ workflows.",e:["alert على Slack لما workflow تفشل","حفظ تفاصيل الأخطاء في قاعدة بيانات","إعادة تشغيل الـ workflow الفاشلة تلقائياً"],t:"لازم تربطه في settings كل workflow في خانة Error Workflow.",lvl:"متوسط"},en:{short:"Fires when a workflow error occurs",w:"Automatically triggers when any other workflow in the same n8n instance fails — for building a central monitoring system.",u:"To build centralized error handling that monitors all workflows.",e:["Slack alert when workflow fails","Save error details to database","Auto-restart failed workflows"],t:"Must be linked in each workflow's settings under Error Workflow.",lvl:"Medium"}},
+{id:"n8ntrigger",name:"n8n Trigger",cat:"Core",icon:"⚡",type:"Internal",ar:{short:"أحداث n8n نفسه (نشر، تحديث)",w:"بيشتغل لما الـ workflow يتنشر أو يتحدث، أو لما الـ n8n instance يبدأ أو يُعاد تشغيله.",u:"للـ DevOps والمراقبة — لو عايز تعمل حاجة تلقائياً عند نشر workflow.",e:["إشعار للتيم لما workflow جديد يتنشر","تسجيل في log لما السيرفر يرجع يشتغل","initialization tasks عند بدء n8n"],t:"بيستجيب لأحداث الـ workflow اللي هو موجود فيه بس، مش كل الـ workflows.",lvl:"متوسط"},en:{short:"n8n internal events (publish, update)",w:"Fires when the workflow is published or updated, or when the n8n instance starts or restarts.",u:"For DevOps and monitoring — to automate something when a workflow is published.",e:["Notify team when new workflow is published","Log when server restarts","Initialization tasks on n8n start"],t:"Only responds to events in the workflow it's in, not all workflows.",lvl:"Medium"}},
+{id:"workflow",name:"Workflow Trigger",cat:"Core",icon:"🔄",type:"Internal",ar:{short:"تشغيل من داخل workflow تاني",w:"بيخلي workflow تشتغل كـ sub-workflow تتبعها workflow رئيسية اللي بتبعت بيانات وتستقبل النتيجة.",u:"لتقسيم workflows كبيرة لأجزاء أصغر قابلة لإعادة الاستخدام.",e:["workflow رئيسية تقسّم المعالجة لـ sub-workflows","مشاركة logic مشترك بين عدة workflows","تنظيم workflow معقد لأجزاء أسهل"],t:"استخدم Execute Sub-workflow node في الـ parent workflow.",lvl:"متوسط"},en:{short:"Trigger from inside another workflow",w:"Makes a workflow run as a sub-workflow called by a parent workflow that sends data and receives results.",u:"To split large workflows into smaller reusable parts.",e:["Parent workflow splits processing into sub-workflows","Share common logic between workflows","Organize complex workflow into simpler parts"],t:"Use Execute Sub-workflow node in the parent workflow.",lvl:"Medium"}},
+{id:"localfile",name:"Local File Trigger",cat:"Core",icon:"📁",type:"Polling",ar:{short:"مراقبة فولدر محلي لتغييرات الملفات",w:"بيراقب فولدر على السيرفر اللي n8n شغّال عليه. لما ملف يتضاف أو يتغير أو يتحذف الـ workflow بتشتغل.",u:"لأتمتة معالجة الملفات اللي بتيجي في فولدر معين.",e:["معالجة CSV files عند إضافتها","ضغط الصور تلقائياً عند الرفع","نقل الملفات بعد المعالجة لفولدر تاني"],t:"بيشتغل على الملفات المحلية فقط، مش cloud storage.",lvl:"متوسط"},en:{short:"Monitor a local folder for file changes",w:"Watches a folder on the server where n8n runs. When a file is added, changed, or deleted, the workflow triggers.",u:"To automate processing of files that arrive in a specific folder.",e:["Process CSV files when added","Auto-compress images on upload","Move processed files to another folder"],t:"Works on local files only, not cloud storage.",lvl:"Medium"}},
+{id:"emailimap",name:"Email Trigger (IMAP)",cat:"Core",icon:"📧",type:"Polling",ar:{short:"مراقبة inbox عبر IMAP",w:"بيراقب email inbox عبر IMAP. لما ييجي إيميل جديد يطابق الشروط الـ workflow بتشتغل.",u:"لأتمتة معالجة الإيميلات لأي provider بيدعم IMAP.",e:["معالجة طلبات العملاء وإنشاء tickets","استخراج مرفقات وحفظها في Drive","الرد التلقائي على إيميلات محددة"],t:"استخدم filters زي sender أو subject لتقليل الـ noise وتحسين الأداء.",lvl:"سهل"},en:{short:"Monitor email inbox via IMAP",w:"Monitors your email inbox via IMAP. When a new email matching the conditions arrives, the workflow runs.",u:"To automate email processing for any IMAP-compatible provider.",e:["Process customer requests and create tickets","Extract attachments and save to Drive","Auto-reply to specific emails"],t:"Use filters like sender or subject to reduce noise and improve performance.",lvl:"Easy"}},
+{id:"rssfeed",name:"RSS Feed Trigger",cat:"Core",icon:"📰",type:"Polling",ar:{short:"مراقبة RSS feed لمحتوى جديد",w:"بيراقب RSS feed ويشغّل الـ workflow لما يظهر محتوى جديد فيه.",u:"لمتابعة المواقع والمدونات والأخبار تلقائياً.",e:["نشر مقالات جديدة على Slack أوتوماتيك","تجميع أخبار المنافسين يومياً","مراقبة مدونات تقنية ونشر الجديد"],t:"بيعمل polling — تقدر تحدد تكرار الفحص حسب احتياجك.",lvl:"سهل"},en:{short:"Monitor RSS feed for new content",w:"Monitors an RSS feed and triggers the workflow when new content appears.",u:"To automatically follow websites, blogs, and news.",e:["Auto-post new articles to Slack","Collect competitor news daily","Monitor tech blogs and share updates"],t:"Uses polling — you can set the check frequency as needed.",lvl:"Easy"}},
+{id:"sse",name:"SSE Trigger",cat:"Core",icon:"📡",type:"Realtime",ar:{short:"استقبال Server-Sent Events",w:"بيستقبل Server-Sent Events (SSE) — اتصال مستمر من السيرفر للـ client بدون polling.",u:"للـ real-time updates من سيرفرات بتبعت events مستمرة.",e:["استقبال updates مباشرة من API","مراقبة تغييرات live في نظام","استقبال إشعارات real-time"],t:"بيحتاج السيرفر يدعم SSE protocol.",lvl:"متقدم"},en:{short:"Receive Server-Sent Events",w:"Receives Server-Sent Events (SSE) — a persistent connection from server to client without polling.",u:"For real-time updates from servers that emit continuous events.",e:["Receive updates directly from API","Monitor live changes in a system","Receive real-time notifications"],t:"Requires the server to support SSE protocol.",lvl:"Advanced"}},
+{id:"mcp",name:"MCP Server Trigger",cat:"Core",icon:"🤖",type:"Realtime",ar:{short:"استقبال أوامر من AI عبر MCP",w:"بيخلي n8n يشتغل كـ MCP Server يستقبل أوامر من AI models زي Claude أو ChatGPT.",u:"لربط AI agents خارجية بـ n8n workflows عبر Model Context Protocol.",e:["Claude يشغّل n8n workflow مباشرةً","AI agent يستخدم n8n كـ tool","أتمتة مدعومة بـ AI من نظام خارجي"],t:"مميزة جداً لبناء AI-powered automations متقدمة.",lvl:"متقدم"},en:{short:"Receive commands from AI via MCP",w:"Makes n8n act as an MCP Server receiving commands from AI models like Claude or ChatGPT.",u:"To connect external AI agents to n8n workflows via Model Context Protocol.",e:["Claude directly triggers n8n workflow","AI agent uses n8n as a tool","AI-powered automation from external system"],t:"Excellent for building advanced AI-powered automations.",lvl:"Advanced"}},
+{id:"activation",name:"Activation Trigger",cat:"Core",icon:"▶️",type:"Internal",ar:{short:"يشتغل عند تفعيل الـ workflow",w:"بيشتغل مرة واحدة لما تفعّل الـ workflow لأول مرة — مش بيتكرر.",u:"لتهيئة البيانات أو setup مرة واحدة عند تشغيل workflow جديد.",e:["إنشاء webhook في تطبيق خارجي عند التفعيل","إرسال إشعار أن الـ workflow اشتغل","تسجيل بداية تشغيل workflow في log"],t:"بيشتغل مرة واحدة بس عند التفعيل — مش متكرر زي Schedule.",lvl:"متوسط"},en:{short:"Fires when workflow is activated",w:"Fires once when you first activate the workflow — does not repeat.",u:"For one-time initialization or setup when a new workflow starts.",e:["Create webhook in external app on activation","Send notification that workflow started","Log workflow start time"],t:"Only fires once on activation — not recurring like Schedule.",lvl:"Medium"}},
+{id:"gmail",name:"Gmail Trigger",cat:"Email",icon:"📮",type:"Polling",ar:{short:"مراقبة Gmail لإيميلات جديدة",w:"بيراقب Gmail عبر Gmail API. أسهل من IMAP ويدعم labels وفلاتر Gmail المتقدمة.",u:"لو بتستخدم Gmail كـ email provider الرئيسي.",e:["معالجة إيميلات support@","فلترة بـ labels معينة","رد تلقائي على أنواع إيميلات"],t:"بيعمل polling كل دقيقة افتراضياً — تقدر تغيّر الفترة حسب احتياجك.",lvl:"سهل"},en:{short:"Monitor Gmail for new emails",w:"Monitors Gmail via Gmail API. Easier than IMAP and supports labels and advanced Gmail filters.",u:"If you use Gmail as your main email provider.",e:["Process support@ emails","Filter by specific labels","Auto-reply to email types"],t:"Polls every minute by default — you can change the interval as needed.",lvl:"Easy"}},
+{id:"outlook",name:"Microsoft Outlook Trigger",cat:"Email",icon:"📨",type:"Polling",ar:{short:"مراقبة Outlook لإيميلات جديدة",w:"بيراقب Microsoft Outlook عبر Microsoft Graph API.",u:"للشركات اللي بتستخدم Microsoft 365 و Outlook.",e:["معالجة إيميلات العمل الواردة","تحويل إيميلات لـ tasks في Teams","أرشفة إيميلات معينة تلقائياً"],t:"بتحتاج Microsoft 365 credentials.",lvl:"سهل"},en:{short:"Monitor Outlook for new emails",w:"Monitors Microsoft Outlook via Microsoft Graph API.",u:"For companies using Microsoft 365 and Outlook.",e:["Process incoming work emails","Convert emails to Teams tasks","Auto-archive specific emails"],t:"Requires Microsoft 365 credentials.",lvl:"Easy"}},
+{id:"mailchimp",name:"Mailchimp Trigger",cat:"Email",icon:"🐵",type:"Webhook",ar:{short:"أحداث Mailchimp campaigns",w:"بيستقبل أحداث من Mailchimp زي اشتراك جديد أو إلغاء اشتراك أو فتح email.",u:"لأتمتة marketing workflows بناءً على سلوك المشتركين.",e:["إرسال هدية لمشترك جديد","إزالة customer من CRM عند إلغاء الاشتراك","تحديث البيانات عند تغيير معلومات مشترك"],t:"بيستخدم webhooks — لازم تضبطه في إعدادات Mailchimp.",lvl:"متوسط"},en:{short:"Mailchimp campaign events",w:"Receives events from Mailchimp like new subscriptions, unsubscribes, or email opens.",u:"To automate marketing workflows based on subscriber behavior.",e:["Send a gift to a new subscriber","Remove customer from CRM on unsubscribe","Update data when subscriber info changes"],t:"Uses webhooks — must be configured in Mailchimp settings.",lvl:"Medium"}},
+{id:"mailerlite",name:"MailerLite Trigger",cat:"Email",icon:"💌",type:"Webhook",ar:{short:"أحداث MailerLite campaigns",w:"بيستقبل أحداث من MailerLite زي اشتراكات جديدة أو إلغاء أو clicks.",u:"لأتمتة email marketing workflows مع MailerLite.",e:["ترحيب تلقائي بمشتركين جدد","تحديث CRM عند اشتراك جديد","تتبع campaign performance"],t:"بيستخدم MailerLite webhooks API.",lvl:"متوسط"},en:{short:"MailerLite campaign events",w:"Receives events from MailerLite like new subscriptions, unsubscribes, or clicks.",u:"To automate email marketing workflows with MailerLite.",e:["Auto-welcome new subscribers","Update CRM on new subscription","Track campaign performance"],t:"Uses MailerLite webhooks API.",lvl:"Medium"}},
+{id:"brevo",name:"Brevo Trigger",cat:"Email",icon:"📧",type:"Webhook",ar:{short:"أحداث Brevo (Sendinblue)",w:"بيستقبل events من Brevo زي emails وSMS وtransactional events.",u:"للشركات اللي بتستخدم Brevo.",e:["workflow عند email bounce","تحديث contact عند unsubscribe","إشعار عند form submission"],t:"بيستخدم Brevo webhooks.",lvl:"متوسط"},en:{short:"Brevo (Sendinblue) events",w:"Receives events from Brevo like emails, SMS, and transactional events.",u:"For companies using Brevo.",e:["Workflow on email bounce","Update contact on unsubscribe","Notify on form submission"],t:"Uses Brevo webhooks.",lvl:"Medium"}},
+{id:"telegram",name:"Telegram Trigger",cat:"Messaging",icon:"✈️",type:"Webhook",ar:{short:"استقبال رسائل Telegram bot",w:"بيستقبل الرسائل والأوامر اللي بتيجي لـ Telegram bot. بيدعم text، صور، ملفات، أوامر، وكل أنواع الرسائل.",u:"لبناء Telegram bots بيتفاعلوا مع المستخدمين.",e:["bot بيجاوب على أسئلة العملاء","bot بيبعت إشعارات","بوت لإدارة مهام التيم"],t:"ابدأ بإنشاء bot عبر @BotFather على Telegram واحصل على الـ API token.",lvl:"سهل"},en:{short:"Receive Telegram bot messages",w:"Receives messages and commands sent to a Telegram bot. Supports text, images, files, commands, and all message types.",u:"To build Telegram bots that interact with users.",e:["Bot answers customer questions","Bot sends notifications","Task management bot for teams"],t:"Start by creating a bot via @BotFather on Telegram to get the API token.",lvl:"Easy"}},
+{id:"slack",name:"Slack Trigger",cat:"Messaging",icon:"💼",type:"Webhook",ar:{short:"أحداث Slack (رسائل، commands)",w:"بيستقبل events من Slack زي رسائل جديدة وردود وslash commands.",u:"للفرق اللي بتستخدم Slack وعايزة أتمتة مرتبطة بالمحادثات.",e:["معالجة /create-task command","workflow عند ذكر الـ bot","أتمتة بناءً على ردود الفريق"],t:"بتحتاج Slack App وتضبط Event Subscriptions.",lvl:"متوسط"},en:{short:"Slack events (messages, commands)",w:"Receives events from Slack like new messages, replies, and slash commands.",u:"For teams using Slack who want automation tied to conversations.",e:["Handle /create-task command","Workflow when bot is mentioned","Automate based on team replies"],t:"Requires a Slack App and configuring Event Subscriptions.",lvl:"Medium"}},
+{id:"discord",name:"Discord Trigger",cat:"Messaging",icon:"🎮",type:"Webhook",ar:{short:"أحداث Discord server",w:"بيستقبل events من Discord زي رسائل جديدة وانضمام أعضاء وردود.",u:"لـ gaming communities أو developer servers على Discord.",e:["ترحيب تلقائي بأعضاء جدد","مراقبة channels معينة","ربط Discord بنظام tickets"],t:"بتحتاج Discord Bot وتضبط permissions صح.",lvl:"متوسط"},en:{short:"Discord server events",w:"Receives events from Discord like new messages, member joins, and reactions.",u:"For gaming communities or developer servers on Discord.",e:["Auto-welcome new members","Monitor specific channels","Link Discord to ticket system"],t:"Requires a Discord Bot with proper permissions.",lvl:"Medium"}},
+{id:"whatsapp",name:"WhatsApp Business Trigger",cat:"Messaging",icon:"📱",type:"Webhook",ar:{short:"رسائل WhatsApp Business",w:"بيستقبل رسائل من WhatsApp Business API عبر Meta.",u:"للشركات اللي عندها WhatsApp Business account.",e:["رد تلقائي على استفسارات العملاء","معالجة طلبات عبر WhatsApp","إرسال confirmations للعملاء"],t:"بتحتاج Meta Business Account وWhatsApp Business API.",lvl:"متقدم"},en:{short:"WhatsApp Business messages",w:"Receives messages from WhatsApp Business API via Meta.",u:"For businesses with a WhatsApp Business account.",e:["Auto-reply to customer inquiries","Process orders via WhatsApp","Send confirmations to customers"],t:"Requires Meta Business Account and WhatsApp Business API.",lvl:"Advanced"}},
+{id:"teams",name:"Microsoft Teams Trigger",cat:"Messaging",icon:"🏢",type:"Webhook",ar:{short:"أحداث Microsoft Teams",w:"بيستقبل events من Microsoft Teams زي رسائل جديدة في channels.",u:"للشركات اللي بتستخدم Microsoft 365 وTeams.",e:["workflow عند ذكر bot في Teams","معالجة commands من Teams","ربط Teams بأنظمة أخرى"],t:"بتحتاج Microsoft 365 credentials وBot registration.",lvl:"متوسط"},en:{short:"Microsoft Teams events",w:"Receives events from Microsoft Teams like new channel messages.",u:"For companies using Microsoft 365 and Teams.",e:["Workflow when bot mentioned in Teams","Handle Teams commands","Connect Teams to other systems"],t:"Requires Microsoft 365 credentials and Bot registration.",lvl:"Medium"}},
+{id:"mattermost",name:"Mattermost Trigger",cat:"Messaging",icon:"💬",type:"Webhook",ar:{short:"أحداث Mattermost",w:"بيستقبل events من Mattermost — بديل open-source لـ Slack.",u:"للشركات اللي بتستخدم Mattermost كنظام مراسلة داخلي.",e:["slash commands في Mattermost","مراقبة channels للردود","ربط Mattermost بأنظمة DevOps"],t:"بتحتاج تضبط incoming webhooks في Mattermost.",lvl:"متوسط"},en:{short:"Mattermost events",w:"Receives events from Mattermost — an open-source alternative to Slack.",u:"For companies using Mattermost as their internal messaging system.",e:["Slash commands in Mattermost","Monitor channels for replies","Connect Mattermost to DevOps systems"],t:"Requires configuring incoming webhooks in Mattermost.",lvl:"Medium"}},
+{id:"line",name:"Line Trigger",cat:"Messaging",icon:"🟢",type:"Webhook",ar:{short:"رسائل Line app",w:"بيستقبل رسائل من Line messaging app الشهير في آسيا.",u:"للشركات في آسيا اللي بتستخدم Line للتواصل مع العملاء.",e:["customer service bot على Line","إشعارات تلقائية للمستخدمين","معالجة طلبات عبر Line"],t:"بتحتاج Line Developer account وchannel.",lvl:"متوسط"},en:{short:"Line app messages",w:"Receives messages from the Line messaging app, popular in Asia.",u:"For businesses in Asia using Line to communicate with customers.",e:["Customer service bot on Line","Auto notifications to users","Process orders via Line"],t:"Requires a Line Developer account and channel.",lvl:"Medium"}},
+{id:"hubspot",name:"HubSpot Trigger",cat:"CRM",icon:"🟠",type:"Webhook",ar:{short:"أحداث HubSpot CRM",w:"بيستقبل events من HubSpot زي إنشاء contacts جديدة أو deals أو تغييرات في properties.",u:"للشركات اللي بتستخدم HubSpot كـ CRM الرئيسي.",e:["workflow عند deal جديد","تحديث نظام تاني عند تغيير contact","إشعار للتيم عند lead جديد"],t:"بيستخدم HubSpot webhooks — بتحتاج تضبطها في الـ settings.",lvl:"متوسط"},en:{short:"HubSpot CRM events",w:"Receives events from HubSpot like new contacts, deals, or property changes.",u:"For companies using HubSpot as their main CRM.",e:["Workflow on new deal","Update another system on contact change","Notify team on new lead"],t:"Uses HubSpot webhooks — needs to be configured in settings.",lvl:"Medium"}},
+{id:"salesforce",name:"Salesforce Trigger",cat:"CRM",icon:"☁️",type:"Webhook",ar:{short:"أحداث Salesforce CRM",w:"بيستقبل events من Salesforce زي new leads وopportunities وaccount changes.",u:"للشركات الكبيرة اللي بتستخدم Salesforce.",e:["workflow عند opportunity جديدة","تزامن Salesforce مع أنظمة أخرى","إشعارات عند تغيير stage"],t:"بتحتاج Salesforce developer account وتضبط connected app.",lvl:"متقدم"},en:{short:"Salesforce CRM events",w:"Receives events from Salesforce like new leads, opportunities, and account changes.",u:"For large companies using Salesforce.",e:["Workflow on new opportunity","Sync Salesforce with other systems","Notify on stage change"],t:"Requires Salesforce developer account and connected app setup.",lvl:"Advanced"}},
+{id:"pipedrive",name:"Pipedrive Trigger",cat:"CRM",icon:"🔵",type:"Webhook",ar:{short:"أحداث Pipedrive deals",w:"بيستقبل events من Pipedrive زي deals جديدة أو تغيير stage.",u:"للشركات اللي بتستخدم Pipedrive لإدارة المبيعات.",e:["إشعار لما deal تتحول لـ Won","تحديث Google Sheets عند deal جديد","task في Asana عند deal stage جديد"],t:"بيستخدم Pipedrive webhooks API.",lvl:"متوسط"},en:{short:"Pipedrive deal events",w:"Receives events from Pipedrive like new deals or stage changes.",u:"For companies using Pipedrive for sales management.",e:["Notify when deal turns Won","Update Google Sheets on new deal","Create Asana task on new deal stage"],t:"Uses Pipedrive webhooks API.",lvl:"Medium"}},
+{id:"zohocrm",name:"Zoho CRM Trigger",cat:"CRM",icon:"🔷",type:"Webhook",ar:{short:"أحداث Zoho CRM",w:"بيستقبل events من Zoho CRM زي leads وcontacts وdeals.",u:"للشركات اللي بتستخدم Zoho suite.",e:["workflow عند lead جديد","تزامن مع Zoho Books","إشعارات للمبيعات"],t:"بتحتاج Zoho API credentials.",lvl:"متوسط"},en:{short:"Zoho CRM events",w:"Receives events from Zoho CRM like leads, contacts, and deals.",u:"For companies using the Zoho suite.",e:["Workflow on new lead","Sync with Zoho Books","Sales team notifications"],t:"Requires Zoho API credentials.",lvl:"Medium"}},
+{id:"highlevel",name:"HighLevel Trigger",cat:"CRM",icon:"📈",type:"Webhook",ar:{short:"أحداث HighLevel CRM",w:"بيستقبل events من HighLevel زي contacts وappointments وforms.",u:"للـ agencies اللي بتستخدم HighLevel لعملائهم.",e:["workflow عند appointment جديد","follow-up تلقائي بعد form","تحديث pipeline تلقائياً"],t:"بتحتاج HighLevel API key.",lvl:"متوسط"},en:{short:"HighLevel CRM events",w:"Receives events from HighLevel like contacts, appointments, and forms.",u:"For agencies using HighLevel for their clients.",e:["Workflow on new appointment","Auto follow-up after form","Auto-update pipeline"],t:"Requires HighLevel API key.",lvl:"Medium"}},
+{id:"lemlist",name:"Lemlist Trigger",cat:"CRM",icon:"📤",type:"Webhook",ar:{short:"أحداث Lemlist outreach",w:"بيستقبل events من Lemlist زي email replies وclicks وbounces.",u:"لأتمتة follow-up بناءً على ردود الـ cold outreach.",e:["workflow عند رد على email","تحديث CRM عند click","إزالة leads غير مهتمين"],t:"بيستخدم Lemlist webhooks.",lvl:"متوسط"},en:{short:"Lemlist outreach events",w:"Receives events from Lemlist like email replies, clicks, and bounces.",u:"To automate follow-ups based on cold outreach responses.",e:["Workflow on email reply","Update CRM on click","Remove uninterested leads"],t:"Uses Lemlist webhooks.",lvl:"Medium"}},
+{id:"asana",name:"Asana Trigger",cat:"PM",icon:"🎯",type:"Webhook",ar:{short:"أحداث Asana tasks",w:"بيستقبل events من Asana زي tasks جديدة أو completed أو تغيير في projects.",u:"للفرق اللي بتستخدم Asana لإدارة المشاريع.",e:["إشعار Slack عند task جديد","workflow عند task مكتمل","ربط Asana بـ time tracking"],t:"بيستخدم Asana webhooks API.",lvl:"متوسط"},en:{short:"Asana task events",w:"Receives events from Asana like new tasks, completions, or project changes.",u:"For teams using Asana for project management.",e:["Slack notify on new task","Workflow on task complete","Link Asana to time tracking"],t:"Uses Asana webhooks API.",lvl:"Medium"}},
+{id:"jira",name:"Jira Trigger",cat:"PM",icon:"🐛",type:"Webhook",ar:{short:"أحداث Jira issues",w:"بيستقبل events من Jira زي issues جديدة أو status changes أو comments.",u:"لفرق الـ development اللي بتستخدم Jira.",e:["إشعار عند bug جديد","workflow عند issue يتحول لـ Done","ربط Jira بـ Slack وCI/CD"],t:"بتحتاج Jira admin access لتضبط webhooks.",lvl:"متوسط"},en:{short:"Jira issue events",w:"Receives events from Jira like new issues, status changes, or comments.",u:"For development teams using Jira.",e:["Notify on new bug","Workflow when issue moves to Done","Link Jira to Slack and CI/CD"],t:"Requires Jira admin access to set up webhooks.",lvl:"Medium"}},
+{id:"clickup",name:"ClickUp Trigger",cat:"PM",icon:"✅",type:"Webhook",ar:{short:"أحداث ClickUp tasks",w:"بيستقبل events من ClickUp زي tasks جديدة وstatus changes وcomments.",u:"للفرق اللي بتستخدم ClickUp لإدارة العمل.",e:["إشعار عند task جديد","workflow عند deadline قريب","ربط ClickUp بـ calendar"],t:"بيستخدم ClickUp webhooks.",lvl:"متوسط"},en:{short:"ClickUp task events",w:"Receives events from ClickUp like new tasks, status changes, and comments.",u:"For teams using ClickUp for work management.",e:["Notify on new task","Workflow on approaching deadline","Link ClickUp to calendar"],t:"Uses ClickUp webhooks.",lvl:"Medium"}},
+{id:"notion",name:"Notion Trigger",cat:"PM",icon:"📓",type:"Polling",ar:{short:"أحداث Notion databases",w:"بيراقب Notion database ويشغّل الـ workflow لما تتضاف أو تتغير records.",u:"للفرق اللي بتستخدم Notion كـ database وworkspace.",e:["workflow عند page جديدة في database","تزامن Notion مع أنظمة أخرى","إشعار عند تغيير status في Notion"],t:"بيعمل polling — مش real-time webhook.",lvl:"متوسط"},en:{short:"Notion database events",w:"Monitors a Notion database and triggers when records are added or changed.",u:"For teams using Notion as their database and workspace.",e:["Workflow on new database page","Sync Notion with other systems","Notify on Notion status change"],t:"Uses polling — not a real-time webhook.",lvl:"Medium"}},
+{id:"monday",name:"Monday.com Trigger",cat:"PM",icon:"🟡",type:"Webhook",ar:{short:"أحداث Monday.com boards",w:"بيستقبل events من Monday.com زي items جديدة أو status changes.",u:"للشركات اللي بتستخدم Monday.com لإدارة العمل.",e:["workflow عند item جديد","إشعار عند تغيير status","ربط Monday.com بأنظمة خارجية"],t:"بيستخدم Monday.com webhooks.",lvl:"متوسط"},en:{short:"Monday.com board events",w:"Receives events from Monday.com like new items or status changes.",u:"For companies using Monday.com for work management.",e:["Workflow on new item","Notify on status change","Connect Monday.com to external systems"],t:"Uses Monday.com webhooks.",lvl:"Medium"}},
+{id:"trello",name:"Trello Trigger",cat:"PM",icon:"📌",type:"Webhook",ar:{short:"أحداث Trello boards",w:"بيستقبل events من Trello زي cards جديدة أو نقل cards بين lists.",u:"للفرق اللي بتستخدم Trello boards.",e:["إشعار عند card جديدة","workflow عند نقل card لـ Done","ربط Trello بـ calendar"],t:"بيستخدم Trello webhooks.",lvl:"سهل"},en:{short:"Trello board events",w:"Receives events from Trello like new cards or moving cards between lists.",u:"For teams using Trello boards.",e:["Notify on new card","Workflow when card moves to Done","Link Trello to calendar"],t:"Uses Trello webhooks.",lvl:"Easy"}},
+{id:"linear",name:"Linear Trigger",cat:"PM",icon:"🔺",type:"Webhook",ar:{short:"أحداث Linear issues",w:"بيستقبل events من Linear زي issues جديدة وstatus changes وcomments.",u:"لفرق الـ engineering اللي بتستخدم Linear.",e:["إشعار Slack عند issue جديد","ربط Linear بـ GitHub","تتبع cycle progress"],t:"بيستخدم Linear webhooks.",lvl:"متوسط"},en:{short:"Linear issue events",w:"Receives events from Linear like new issues, status changes, and comments.",u:"For engineering teams using Linear.",e:["Slack notify on new issue","Link Linear to GitHub","Track cycle progress"],t:"Uses Linear webhooks.",lvl:"Medium"}},
+{id:"basecamp",name:"Basecamp Trigger",cat:"PM",icon:"⛺",type:"Webhook",ar:{short:"أحداث Basecamp projects",w:"بيستقبل events من Basecamp زي to-dos جديدة وmessages وcomments.",u:"للفرق اللي بتستخدم Basecamp للتعاون.",e:["إشعار عند to-do جديد","workflow عند message في project","ربط Basecamp بأنظمة أخرى"],t:"بيستخدم Basecamp webhooks.",lvl:"متوسط"},en:{short:"Basecamp project events",w:"Receives events from Basecamp like new to-dos, messages, and comments.",u:"For teams using Basecamp for collaboration.",e:["Notify on new to-do","Workflow on project message","Connect Basecamp to other systems"],t:"Uses Basecamp webhooks.",lvl:"Medium"}},
+{id:"shopify",name:"Shopify Trigger",cat:"eCommerce",icon:"🛍️",type:"Webhook",ar:{short:"أحداث Shopify (orders, products)",w:"بيستقبل events من Shopify زي orders جديدة وpayments وcustomer registration.",u:"لمتاجر Shopify اللي عايزة أتمتة عمليات البيع.",e:["workflow عند order جديد","تحديث inventory عند بيع","إشعار فريق التوصيل عند order"],t:"بيستخدم Shopify webhooks.",lvl:"متوسط"},en:{short:"Shopify events (orders, products)",w:"Receives events from Shopify like new orders, payments, and customer registrations.",u:"For Shopify stores wanting to automate sales operations.",e:["Workflow on new order","Update inventory on sale","Notify delivery team on order"],t:"Uses Shopify webhooks.",lvl:"Medium"}},
+{id:"woocommerce",name:"WooCommerce Trigger",cat:"eCommerce",icon:"🛒",type:"Webhook",ar:{short:"أحداث WooCommerce orders",w:"بيستقبل events من WooCommerce زي orders جديدة وorder status changes.",u:"لمتاجر WooCommerce على WordPress.",e:["workflow عند order جديد","تحديث CRM عند customer جديد","إشعار عند order cancelled"],t:"بيستخدم WooCommerce webhooks.",lvl:"متوسط"},en:{short:"WooCommerce order events",w:"Receives events from WooCommerce like new orders and order status changes.",u:"For WooCommerce stores on WordPress.",e:["Workflow on new order","Update CRM on new customer","Notify on order cancellation"],t:"Uses WooCommerce webhooks.",lvl:"Medium"}},
+{id:"stripe",name:"Stripe Trigger",cat:"eCommerce",icon:"💳",type:"Webhook",ar:{short:"أحداث Stripe payments",w:"بيستقبل events من Stripe زي payments وsubscriptions وrefunds وfailed charges.",u:"لأي تطبيق بيستخدم Stripe للدفع.",e:["workflow عند payment ناجح","إلغاء access عند failed subscription","إشعار عند refund"],t:"آمن جداً بـ signature verification — تأكد تفعّله.",lvl:"متوسط"},en:{short:"Stripe payment events",w:"Receives events from Stripe like payments, subscriptions, refunds, and failed charges.",u:"For any app using Stripe for payments.",e:["Workflow on successful payment","Revoke access on failed subscription","Notify on refund"],t:"Very secure with signature verification — make sure to enable it.",lvl:"Medium"}},
+{id:"paypal",name:"PayPal Trigger",cat:"eCommerce",icon:"💰",type:"Webhook",ar:{short:"أحداث PayPal payments",w:"بيستقبل events من PayPal زي payments وrefunds وdisputes.",u:"لأي تطبيق بيستخدم PayPal.",e:["workflow عند payment ناجح","تحديث DB عند refund","إشعار عند dispute"],t:"تأكد من التحقق من authenticity الـ requests.",lvl:"متوسط"},en:{short:"PayPal payment events",w:"Receives events from PayPal like payments, refunds, and disputes.",u:"For any app using PayPal.",e:["Workflow on successful payment","Update DB on refund","Notify on dispute"],t:"Make sure to verify request authenticity.",lvl:"Medium"}},
+{id:"chargebee",name:"Chargebee Trigger",cat:"eCommerce",icon:"💵",type:"Webhook",ar:{short:"أحداث Chargebee subscriptions",w:"بيستقبل events من Chargebee زي subscriptions جديدة وcancellations وpayment failures.",u:"للـ SaaS products اللي بتستخدم Chargebee.",e:["workflow عند subscription جديد","تحديث access عند cancellation","dunning automation عند failed payment"],t:"بيستخدم Chargebee webhooks.",lvl:"متوسط"},en:{short:"Chargebee subscription events",w:"Receives events from Chargebee like new subscriptions, cancellations, and payment failures.",u:"For SaaS products using Chargebee.",e:["Workflow on new subscription","Update access on cancellation","Dunning automation on failed payment"],t:"Uses Chargebee webhooks.",lvl:"Medium"}},
+{id:"paddle",name:"Paddle Trigger",cat:"eCommerce",icon:"🏓",type:"Webhook",ar:{short:"أحداث Paddle billing",w:"بيستقبل events من Paddle زي payments وsubscriptions وrefunds.",u:"للـ SaaS products اللي بتستخدم Paddle.",e:["workflow عند purchase","تحديث license عند subscription","إشعار عند refund"],t:"بيستخدم Paddle webhooks.",lvl:"متوسط"},en:{short:"Paddle billing events",w:"Receives events from Paddle like payments, subscriptions, and refunds.",u:"For SaaS products using Paddle.",e:["Workflow on purchase","Update license on subscription","Notify on refund"],t:"Uses Paddle webhooks.",lvl:"Medium"}},
+{id:"github",name:"GitHub Trigger",cat:"Dev",icon:"🐙",type:"Webhook",ar:{short:"أحداث GitHub (push, PR, issues)",w:"بيستقبل GitHub webhooks عند push أو pull requests أو issues أو releases.",u:"لأتمتة CI/CD وإدارة issues وإشعارات التيم.",e:["إشعار Slack عند Pull Request","deployment تلقائي عند merge","task في Jira عند Issue جديد"],t:"تضبط webhook في إعدادات الـ repository على GitHub.",lvl:"متوسط"},en:{short:"GitHub events (push, PR, issues)",w:"Receives GitHub webhooks on push, pull requests, issues, or releases.",u:"To automate CI/CD, issue management, and team notifications.",e:["Slack notify on Pull Request","Auto-deploy on merge","Jira task on new Issue"],t:"Set up webhook in GitHub repository settings.",lvl:"Medium"}},
+{id:"gitlab",name:"GitLab Trigger",cat:"Dev",icon:"🦊",type:"Webhook",ar:{short:"أحداث GitLab (push, MR, pipelines)",w:"بيستقبل GitLab webhooks عند push أو merge requests أو pipeline events.",u:"للفرق اللي بتستخدم GitLab.",e:["إشعار عند merge request","deployment عند pipeline success","إشعار عند failed pipeline"],t:"تضبط webhook في إعدادات الـ project.",lvl:"متوسط"},en:{short:"GitLab events (push, MR, pipelines)",w:"Receives GitLab webhooks on push, merge requests, or pipeline events.",u:"For teams using GitLab.",e:["Notify on merge request","Deploy on pipeline success","Alert on failed pipeline"],t:"Set up webhook in GitLab project settings.",lvl:"Medium"}},
+{id:"bitbucket",name:"Bitbucket Trigger",cat:"Dev",icon:"🪣",type:"Webhook",ar:{short:"أحداث Bitbucket repos",w:"بيستقبل Bitbucket webhooks عند push أو pull requests.",u:"للفرق اللي بتستخدم Bitbucket.",e:["إشعار عند pull request","trigger CI عند push","إشعار عند failed build"],t:"تضبط webhook في إعدادات الـ repository.",lvl:"متوسط"},en:{short:"Bitbucket repository events",w:"Receives Bitbucket webhooks on push or pull requests.",u:"For teams using Bitbucket.",e:["Notify on pull request","Trigger CI on push","Alert on failed build"],t:"Set up webhook in repository settings.",lvl:"Medium"}},
+{id:"circleci",name:"CircleCI Trigger",cat:"Dev",icon:"⭕",type:"Webhook",ar:{short:"أحداث CircleCI pipelines",w:"بيستقبل events من CircleCI زي workflow completed أو failed.",u:"لأتمتة post-deployment tasks.",e:["إشعار Slack عند build فشل","deployment إضافي عند نجاح","تحديث task في Jira"],t:"بيستخدم CircleCI webhooks.",lvl:"متوسط"},en:{short:"CircleCI pipeline events",w:"Receives events from CircleCI like workflow completed or failed.",u:"To automate post-deployment tasks.",e:["Slack notify on build failure","Additional deployment on success","Update Jira task"],t:"Uses CircleCI webhooks.",lvl:"Medium"}},
+{id:"netlify",name:"Netlify Trigger",cat:"Dev",icon:"🌐",type:"Webhook",ar:{short:"أحداث Netlify deployments",w:"بيستقبل events من Netlify زي deploy success أو fail.",u:"للمواقع المبنية على Netlify.",e:["إشعار عند deploy ناجح","workflow عند form submission","alert عند deploy فشل"],t:"بيستخدم Netlify webhooks.",lvl:"سهل"},en:{short:"Netlify deployment events",w:"Receives events from Netlify like deploy success or failure.",u:"For websites built on Netlify.",e:["Notify on successful deploy","Workflow on form submission","Alert on deploy failure"],t:"Uses Netlify webhooks.",lvl:"Easy"}},
+{id:"rabbitmq",name:"RabbitMQ Trigger",cat:"Queue",icon:"🐇",type:"Realtime",ar:{short:"استقبال messages من RabbitMQ",w:"بيستمع لـ RabbitMQ queue ويشغّل الـ workflow لما تيجي message جديدة.",u:"في الأنظمة المعقدة اللي بتستخدم message queues.",e:["معالجة orders من نظام التجارة","تنسيق العمل بين microservices","معالجة background jobs"],t:"RabbitMQ بيضمن إن كل message تتعالج مرة واحدة بس.",lvl:"متقدم"},en:{short:"Receive messages from RabbitMQ",w:"Listens to a RabbitMQ queue and triggers the workflow when a new message arrives.",u:"In complex systems using message queues.",e:["Process orders from commerce system","Coordinate work between microservices","Process background jobs"],t:"RabbitMQ guarantees each message is processed exactly once.",lvl:"Advanced"}},
+{id:"kafka",name:"Kafka Trigger",cat:"Queue",icon:"🌊",type:"Realtime",ar:{short:"الاشتراك في Kafka topics",w:"بيشترك في Apache Kafka topic ويشغّل الـ workflow لما تييجي events جديدة.",u:"في الأنظمة الكبيرة اللي بتعالج ملايين الأحداث.",e:["معالجة user activity events في real-time","بناء data pipeline لتحليل البيانات","تزامن بيانات بين أنظمة كبيرة"],t:"Kafka أقوى من RabbitMQ في الـ throughput لكن أصعب في الإعداد.",lvl:"متقدم"},en:{short:"Subscribe to Kafka topics",w:"Subscribes to an Apache Kafka topic and triggers the workflow when new events arrive.",u:"In large systems processing millions of events.",e:["Process user activity events in real-time","Build data pipeline for analysis","Sync data between large systems"],t:"Kafka is more powerful than RabbitMQ in throughput but harder to set up.",lvl:"Advanced"}},
+{id:"redis",name:"Redis Trigger",cat:"Queue",icon:"🔴",type:"Realtime",ar:{short:"الاستماع لـ Redis pub/sub",w:"بيستمع لـ Redis pub/sub channels أو بيراقب Redis lists.",u:"للـ real-time messaging السريع جداً.",e:["real-time notifications من تطبيق ويب","معالجة job queue بسرعة عالية","تزامن حالة النظام بين عدة instances"],t:"Redis Pub/Sub مش بيحفظ الرسائل لو المستقبل مش متصل.",lvl:"متقدم"},en:{short:"Listen to Redis pub/sub",w:"Listens to Redis pub/sub channels or monitors Redis lists.",u:"For very fast real-time messaging.",e:["Real-time notifications from web app","High-speed job queue processing","Sync system state between instances"],t:"Redis Pub/Sub doesn't save messages if the receiver is offline.",lvl:"Advanced"}},
+{id:"amqp",name:"AMQP Trigger",cat:"Queue",icon:"📨",type:"Realtime",ar:{short:"استقبال AMQP messages",w:"بيستقبل messages عبر AMQP protocol — يدعم أي broker بيدعم AMQP.",u:"لأنظمة enterprise messaging.",e:["استقبال messages من Azure Service Bus","تكامل مع enterprise systems","معالجة events من أنظمة مختلفة"],t:"AMQP بروتوكول قياسي يشتغل مع brokers متعددة.",lvl:"متقدم"},en:{short:"Receive AMQP messages",w:"Receives messages via AMQP protocol — supports any AMQP-compatible broker.",u:"For enterprise messaging systems.",e:["Receive messages from Azure Service Bus","Integrate with enterprise systems","Process events from different systems"],t:"AMQP is a standard protocol that works with multiple brokers.",lvl:"Advanced"}},
+{id:"mqtt",name:"MQTT Trigger",cat:"IoT",icon:"📡",type:"Realtime",ar:{short:"استقبال رسائل IoT عبر MQTT",w:"بيشترك في MQTT topic ويستقبل بيانات من أجهزة IoT وsensors.",u:"لو عندك IoT devices أو Smart Home.",e:["قراءات temperature من sensors وتسجيلها","automation عند كشف حركة","مراقبة أجهزة المصنع وإرسال تنبيهات"],t:"بتحتاج MQTT broker زي Mosquitto أو HiveMQ.",lvl:"متقدم"},en:{short:"Receive IoT messages via MQTT",w:"Subscribes to an MQTT topic and receives data from IoT devices and sensors.",u:"If you have IoT devices or a Smart Home.",e:["Log temperature readings from sensors","Automation on motion detection","Monitor factory machines and send alerts"],t:"Requires an MQTT broker like Mosquitto or HiveMQ.",lvl:"Advanced"}},
+{id:"homeassistant",name:"Home Assistant Trigger",cat:"IoT",icon:"🏠",type:"Webhook",ar:{short:"أحداث Home Assistant",w:"بيستقبل events من Home Assistant زي state changes.",u:"لـ smart home على Home Assistant.",e:["workflow عند lights تشتغل","إشعار عند door تفتح","أتمتة مرتبطة بـ presence"],t:"بتحتاج Home Assistant instance وLong-Lived Access Token.",lvl:"متوسط"},en:{short:"Home Assistant events",w:"Receives events from Home Assistant like state changes.",u:"For smart home automation on Home Assistant.",e:["Workflow when lights turn on","Notify when door opens","Presence-based automation"],t:"Requires Home Assistant instance and Long-Lived Access Token.",lvl:"Medium"}},
+{id:"googlesheets",name:"Google Sheets Trigger",cat:"Google",icon:"📊",type:"Polling",ar:{short:"تغييرات في Google Sheets",w:"بيراقب Google Sheets ويشغّل الـ workflow لما تتضاف صفوف جديدة.",u:"للفرق اللي بتستخدم Sheets كـ database.",e:["معالجة بيانات جديدة في spreadsheet","workflow عند إضافة row","تزامن Sheets مع CRM"],t:"بيعمل polling — مش real-time.",lvl:"سهل"},en:{short:"Google Sheets changes",w:"Monitors Google Sheets and triggers when new rows are added.",u:"For teams using Sheets as a database.",e:["Process new spreadsheet data","Workflow on new row","Sync Sheets with CRM"],t:"Uses polling — not real-time.",lvl:"Easy"}},
+{id:"googledrive",name:"Google Drive Trigger",cat:"Google",icon:"💾",type:"Polling",ar:{short:"تغييرات ملفات Google Drive",w:"بيراقب Google Drive ويشغّل الـ workflow لما تتضاف أو تتغير ملفات.",u:"للفرق اللي بتشارك ملفات عبر Drive.",e:["معالجة ملفات جديدة في folder","workflow عند upload","تزامن Drive مع storage تاني"],t:"بيعمل polling — حدّد الـ folder الصح.",lvl:"سهل"},en:{short:"Google Drive file changes",w:"Monitors Google Drive and triggers when files are added or changed.",u:"For teams sharing files via Drive.",e:["Process new files in folder","Workflow on upload","Sync Drive with other storage"],t:"Uses polling — specify the correct folder.",lvl:"Easy"}},
+{id:"googlecalendar",name:"Google Calendar Trigger",cat:"Google",icon:"📅",type:"Polling",ar:{short:"أحداث Google Calendar",w:"بيراقب Google Calendar ويشغّل الـ workflow عند events جديدة.",u:"لأتمتة workflows مرتبطة بالجداول والاجتماعات.",e:["إشعار قبل meeting","workflow عند event جديد","تزامن Calendar مع CRM"],t:"بيعمل polling.",lvl:"سهل"},en:{short:"Google Calendar events",w:"Monitors Google Calendar and triggers when new events are created.",u:"To automate workflows tied to schedules and meetings.",e:["Remind before meeting","Workflow on new event","Sync Calendar with CRM"],t:"Uses polling.",lvl:"Easy"}},
+{id:"dropbox",name:"Dropbox Trigger",cat:"Storage",icon:"📦",type:"Webhook",ar:{short:"تغييرات ملفات Dropbox",w:"بيراقب Dropbox ويشغّل الـ workflow لما تتضاف أو تتغير ملفات.",u:"للفرق اللي بتستخدم Dropbox لمشاركة الملفات.",e:["معالجة ملفات جديدة","workflow عند upload","تزامن Dropbox مع storage تاني"],t:"بيستخدم Dropbox webhooks.",lvl:"سهل"},en:{short:"Dropbox file changes",w:"Monitors Dropbox and triggers when files are added or changed.",u:"For teams using Dropbox for file sharing.",e:["Process new files","Workflow on upload","Sync Dropbox with other storage"],t:"Uses Dropbox webhooks.",lvl:"Easy"}},
+{id:"onedrive",name:"Microsoft OneDrive Trigger",cat:"Storage",icon:"☁️",type:"Polling",ar:{short:"تغييرات OneDrive",w:"بيراقب OneDrive ويشغّل الـ workflow عند تغييرات الملفات.",u:"للشركات اللي بتستخدم Microsoft 365.",e:["معالجة ملفات جديدة في OneDrive","workflow عند تغيير document","تزامن OneDrive مع SharePoint"],t:"بتحتاج Microsoft 365 credentials.",lvl:"متوسط"},en:{short:"OneDrive file changes",w:"Monitors OneDrive and triggers when files change.",u:"For companies using Microsoft 365.",e:["Process new OneDrive files","Workflow on document change","Sync OneDrive with SharePoint"],t:"Requires Microsoft 365 credentials.",lvl:"Medium"}},
+{id:"typeform",name:"Typeform Trigger",cat:"Forms",icon:"📋",type:"Webhook",ar:{short:"إجابات Typeform جديدة",w:"بيشتغل لما حد يكمّل Typeform.",u:"لجمع بيانات بـ UX ممتازة.",e:["حفظ leads في CRM","إرسال confirmation email","إنشاء user account من form"],t:"بيستخدم Typeform webhooks.",lvl:"سهل"},en:{short:"New Typeform submissions",w:"Fires when someone completes a Typeform.",u:"To collect data with excellent UX.",e:["Save leads to CRM","Send confirmation email","Create user account from form"],t:"Uses Typeform webhooks.",lvl:"Easy"}},
+{id:"jotform",name:"JotForm Trigger",cat:"Forms",icon:"📄",type:"Webhook",ar:{short:"إجابات JotForm جديدة",w:"بيشتغل لما حد يبعت JotForm.",u:"للـ forms المعقدة مع payments وfiles.",e:["معالجة طلبات مع مرفقات","workflow عند payment form","إنشاء ticket من form"],t:"بيستخدم JotForm webhooks.",lvl:"سهل"},en:{short:"New JotForm submissions",w:"Fires when someone submits a JotForm.",u:"For complex forms with payments and file uploads.",e:["Process requests with attachments","Workflow on payment form","Create ticket from form"],t:"Uses JotForm webhooks.",lvl:"Easy"}},
+{id:"tally",name:"Tally Trigger",cat:"Forms",icon:"🗂️",type:"Webhook",ar:{short:"إجابات Tally forms",w:"بيشتغل لما حد يبعت Tally form — بديل مجاني لـ Typeform.",u:"لجمع بيانات ببساطة مع free plan سخي.",e:["حفظ إجابات في Airtable","إيميل ترحيب","إنشاء task من form"],t:"بيستخدم Tally webhooks.",lvl:"سهل"},en:{short:"New Tally form submissions",w:"Fires when someone submits a Tally form — a free alternative to Typeform.",u:"To collect data simply with a generous free plan.",e:["Save answers to Airtable","Welcome email","Create task from form"],t:"Uses Tally webhooks.",lvl:"Easy"}},
+{id:"surveymonkey",name:"SurveyMonkey Trigger",cat:"Forms",icon:"🐒",type:"Webhook",ar:{short:"إجابات SurveyMonkey",w:"بيشتغل لما حد يكمّل SurveyMonkey survey.",u:"للشركات اللي بتستخدم SurveyMonkey.",e:["تحليل نتائج استبيان","إرسال report للمدير","تحديث NPS في CRM"],t:"بيستخدم SurveyMonkey webhooks — بتحتاج paid plan.",lvl:"متوسط"},en:{short:"New SurveyMonkey responses",w:"Fires when someone completes a SurveyMonkey survey.",u:"For companies using SurveyMonkey.",e:["Analyze survey results","Send report to manager","Update NPS in CRM"],t:"Uses SurveyMonkey webhooks — requires paid plan.",lvl:"Medium"}},
+{id:"zendesk",name:"Zendesk Trigger",cat:"Support",icon:"🎫",type:"Webhook",ar:{short:"أحداث Zendesk tickets",w:"بيستقبل events من Zendesk زي tickets جديدة وcomments وstatus changes.",u:"للشركات اللي بتستخدم Zendesk للدعم.",e:["إشعار Slack عند ticket جديد","escalation عند ticket قديم","تحديث CRM عند ticket resolved"],t:"بيستخدم Zendesk webhooks.",lvl:"متوسط"},en:{short:"Zendesk ticket events",w:"Receives events from Zendesk like new tickets, comments, and status changes.",u:"For companies using Zendesk for support.",e:["Slack notify on new ticket","Escalate old tickets","Update CRM on ticket resolved"],t:"Uses Zendesk webhooks.",lvl:"Medium"}},
+{id:"freshdesk",name:"Freshdesk Trigger",cat:"Support",icon:"🌱",type:"Webhook",ar:{short:"أحداث Freshdesk tickets",w:"بيستقبل events من Freshdesk زي tickets جديدة ورسائل.",u:"للشركات اللي بتستخدم Freshdesk.",e:["إشعار عند ticket جديد","workflow عند SLA breach","تحديث CRM عند resolution"],t:"بيستخدم Freshdesk webhooks.",lvl:"متوسط"},en:{short:"Freshdesk ticket events",w:"Receives events from Freshdesk like new tickets and replies.",u:"For companies using Freshdesk.",e:["Notify on new ticket","Workflow on SLA breach","Update CRM on resolution"],t:"Uses Freshdesk webhooks.",lvl:"Medium"}},
+{id:"intercom",name:"Intercom Trigger",cat:"Support",icon:"💬",type:"Webhook",ar:{short:"أحداث Intercom conversations",w:"بيستقبل events من Intercom زي conversations جديدة وleads.",u:"للشركات اللي بتستخدم Intercom للـ customer messaging.",e:["workflow عند conversation جديدة","إضافة lead لـ CRM","إشعار عند high-value user"],t:"بيستخدم Intercom webhooks.",lvl:"متوسط"},en:{short:"Intercom conversation events",w:"Receives events from Intercom like new conversations and leads.",u:"For companies using Intercom for customer messaging.",e:["Workflow on new conversation","Add lead to CRM","Notify on high-value user"],t:"Uses Intercom webhooks.",lvl:"Medium"}},
+{id:"crisp",name:"Crisp Trigger",cat:"Support",icon:"🟢",type:"Webhook",ar:{short:"أحداث Crisp chat",w:"بيستقبل events من Crisp زي messages جديدة وconversations.",u:"للشركات اللي بتستخدم Crisp للـ live chat.",e:["workflow عند chat جديد","إضافة contact لـ CRM","إشعار للـ support team"],t:"بيستخدم Crisp webhooks.",lvl:"سهل"},en:{short:"Crisp chat events",w:"Receives events from Crisp like new messages and conversations.",u:"For companies using Crisp for live chat.",e:["Workflow on new chat","Add contact to CRM","Notify support team"],t:"Uses Crisp webhooks.",lvl:"Easy"}},
+{id:"twitter",name:"X (Twitter) Trigger",cat:"Social",icon:"🐦",type:"Polling",ar:{short:"أحداث Twitter/X",w:"بيستقبل events من Twitter/X زي mentions وreplies.",u:"لمراقبة brand mentions والتفاعل.",e:["إشعار عند mention للـ brand","monitoring hashtags","ردود تلقائية على tweets"],t:"بتحتاج Twitter API v2 — تحقق من الـ plan.",lvl:"متوسط"},en:{short:"Twitter/X events",w:"Receives events from Twitter/X like mentions and replies.",u:"To monitor brand mentions and engage.",e:["Notify on brand mention","Monitor hashtags","Auto-reply to tweets"],t:"Requires Twitter API v2 — check your plan.",lvl:"Medium"}},
+{id:"facebook",name:"Facebook Lead Ads Trigger",cat:"Social",icon:"👤",type:"Webhook",ar:{short:"leads جديدة من Facebook",w:"بيشتغل لما حد يملّا Facebook Lead Ad form.",u:"لأتمتة معالجة leads من Facebook.",e:["إضافة lead لـ CRM فوراً","إرسال welcome email","إشعار فريق المبيعات"],t:"بتحتاج Facebook Business account وad account.",lvl:"متوسط"},en:{short:"New Facebook Lead Ads leads",w:"Fires when someone fills out a Facebook Lead Ad form.",u:"To automate Facebook lead processing.",e:["Add lead to CRM immediately","Send welcome email","Notify sales team"],t:"Requires Facebook Business account and ad account.",lvl:"Medium"}},
+{id:"instagram",name:"Instagram Trigger",cat:"Social",icon:"📸",type:"Webhook",ar:{short:"أحداث Instagram Business",w:"بيستقبل events من Instagram Business زي mentions وcomments.",u:"للشركات اللي عندها Instagram Business account.",e:["إشعار عند mention","تتبع comments على posts","ردود تلقائية على DMs"],t:"بتحتاج Instagram Business account مرتبط بـ Facebook.",lvl:"متوسط"},en:{short:"Instagram Business events",w:"Receives events from Instagram Business like mentions and comments.",u:"For businesses with an Instagram Business account.",e:["Notify on mention","Track post comments","Auto-reply to DMs"],t:"Requires Instagram Business account linked to Facebook.",lvl:"Medium"}},
+{id:"airtable",name:"Airtable Trigger",cat:"Database",icon:"🗄️",type:"Polling",ar:{short:"تغييرات في Airtable records",w:"بيراقب Airtable table ويشغّل الـ workflow لما تتضاف أو تتغير records.",u:"للفرق اللي بتستخدم Airtable كـ database.",e:["workflow عند record جديد","تزامن Airtable مع CRM","إشعار عند تغيير status"],t:"بيعمل polling — حدّد الـ trigger field.",lvl:"سهل"},en:{short:"Airtable record changes",w:"Monitors an Airtable table and triggers when records are added or changed.",u:"For teams using Airtable as a database.",e:["Workflow on new record","Sync Airtable with CRM","Notify on status change"],t:"Uses polling — specify the trigger field.",lvl:"Easy"}},
+{id:"supabase",name:"Supabase Trigger",cat:"Database",icon:"⚡",type:"Webhook",ar:{short:"تغييرات Supabase tables",w:"بيستقبل events من Supabase database.",u:"لـ apps المبنية على Supabase.",e:["workflow عند user جديد","معالجة orders","إشعار عند data change"],t:"بيستخدم Supabase webhooks أو Realtime.",lvl:"متوسط"},en:{short:"Supabase table changes",w:"Receives events from Supabase database.",u:"For apps built on Supabase.",e:["Workflow on new user","Process orders","Notify on data change"],t:"Uses Supabase webhooks or Realtime.",lvl:"Medium"}},
+{id:"nocodb",name:"NocoDB Trigger",cat:"Database",icon:"🌙",type:"Webhook",ar:{short:"تغييرات NocoDB",w:"بيستقبل events من NocoDB — بديل open-source لـ Airtable.",u:"للفرق اللي بتستخدم NocoDB.",e:["workflow عند row جديد","تزامن مع أنظمة أخرى","إشعار عند تغيير"],t:"بيستخدم NocoDB webhooks.",lvl:"متوسط"},en:{short:"NocoDB table changes",w:"Receives events from NocoDB — an open-source alternative to Airtable.",u:"For teams using NocoDB.",e:["Workflow on new row","Sync with other systems","Notify on change"],t:"Uses NocoDB webhooks.",lvl:"Medium"}},
+{id:"activecampaign",name:"ActiveCampaign Trigger",cat:"Marketing",icon:"📢",type:"Webhook",ar:{short:"أحداث ActiveCampaign",w:"بيستقبل events من ActiveCampaign زي contacts جديدة وdeal changes.",u:"للشركات اللي بتستخدم ActiveCampaign.",e:["workflow عند contact جديد","تحديث CRM عند deal change","إشعار عند automation trigger"],t:"بيستخدم ActiveCampaign webhooks.",lvl:"متوسط"},en:{short:"ActiveCampaign events",w:"Receives events from ActiveCampaign like new contacts and deal changes.",u:"For companies using ActiveCampaign.",e:["Workflow on new contact","Update CRM on deal change","Notify on automation trigger"],t:"Uses ActiveCampaign webhooks.",lvl:"Medium"}},
+{id:"mailerlite2",name:"MailerLite Trigger",cat:"Marketing",icon:"💌",type:"Webhook",ar:{short:"أحداث MailerLite marketing",w:"بيستقبل events مرتبطة بالـ marketing campaigns في MailerLite.",u:"لأتمتة marketing workflows.",e:["workflow عند subscriber جديد","follow-up automation","تحديث CRM"],t:"بيستخدم MailerLite webhooks.",lvl:"متوسط"},en:{short:"MailerLite marketing events",w:"Receives events related to MailerLite marketing campaigns.",u:"To automate marketing workflows.",e:["Workflow on new subscriber","Follow-up automation","Update CRM"],t:"Uses MailerLite webhooks.",lvl:"Medium"}},
+{id:"convertkit",name:"ConvertKit Trigger",cat:"Marketing",icon:"🎨",type:"Webhook",ar:{short:"أحداث ConvertKit",w:"بيستقبل events من ConvertKit زي subscribers وpurchases.",u:"للـ creators اللي بتستخدم ConvertKit.",e:["workflow عند subscriber جديد","إضافة لـ course عند purchase","تحديث membership"],t:"بيستخدم ConvertKit webhooks.",lvl:"متوسط"},en:{short:"ConvertKit events",w:"Receives events from ConvertKit like subscribers and purchases.",u:"For creators using ConvertKit.",e:["Workflow on new subscriber","Add to course on purchase","Update membership"],t:"Uses ConvertKit webhooks.",lvl:"Medium"}},
+{id:"calendly",name:"Calendly Trigger",cat:"Calendar",icon:"📅",type:"Webhook",ar:{short:"حجوزات Calendly",w:"بيشتغل لما حد يحجز موعد أو يلغيه عبر Calendly.",u:"للـ consultants والشركات اللي بتستخدم Calendly.",e:["إضافة booking لـ CRM","إرسال confirmation مخصص","إنشاء Zoom link تلقائياً"],t:"بيستخدم Calendly webhooks.",lvl:"سهل"},en:{short:"Calendly booking events",w:"Fires when someone books or cancels an appointment via Calendly.",u:"For consultants and companies using Calendly.",e:["Add booking to CRM","Send custom confirmation","Auto-create Zoom link"],t:"Uses Calendly webhooks.",lvl:"Easy"}},
+{id:"cal-com",name:"Cal.com Trigger",cat:"Calendar",icon:"🗓️",type:"Webhook",ar:{short:"حجوزات Cal.com",w:"بيشتغل لما حد يحجز أو يلغي موعد عبر Cal.com.",u:"بديل open-source لـ Calendly.",e:["إضافة لـ CRM","إيميل تأكيد","meeting link"],t:"Cal.com مفتوح المصدر — يمكن self-host.",lvl:"سهل"},en:{short:"Cal.com booking events",w:"Fires when someone books or cancels an appointment via Cal.com.",u:"Open-source alternative to Calendly.",e:["Add to CRM","Confirmation email","Create meeting link"],t:"Cal.com is open-source — can be self-hosted.",lvl:"Easy"}},
+{id:"bamboohr",name:"BambooHR Trigger",cat:"HR",icon:"🎋",type:"Webhook",ar:{short:"أحداث BambooHR",w:"بيستقبل events من BambooHR زي employees جدد وtime-off requests.",u:"للشركات اللي بتستخدم BambooHR.",e:["workflow عند employee جديد","time-off approval إشعار","تحديث أنظمة أخرى"],t:"بيستخدم BambooHR webhooks.",lvl:"متوسط"},en:{short:"BambooHR HR events",w:"Receives events from BambooHR like new employees and time-off requests.",u:"For companies using BambooHR.",e:["Workflow on new employee","Time-off approval notify","Update other systems"],t:"Uses BambooHR webhooks.",lvl:"Medium"}},
+{id:"quickbooks",name:"QuickBooks Trigger",cat:"Finance",icon:"💹",type:"Webhook",ar:{short:"أحداث QuickBooks",w:"بيستقبل events من QuickBooks زي invoices وpayments وcustomers.",u:"للشركات اللي بتستخدم QuickBooks.",e:["workflow عند invoice جديد","إشعار عند payment received","تزامن مع CRM"],t:"بيستخدم QuickBooks webhooks.",lvl:"متوسط"},en:{short:"QuickBooks accounting events",w:"Receives events from QuickBooks like invoices, payments, and customers.",u:"For companies using QuickBooks.",e:["Workflow on new invoice","Notify on payment received","Sync with CRM"],t:"Uses QuickBooks webhooks.",lvl:"Medium"}},
+{id:"xero",name:"Xero Trigger",cat:"Finance",icon:"💙",type:"Webhook",ar:{short:"أحداث Xero accounting",w:"بيستقبل events من Xero زي invoices وpayments وcontacts.",u:"للشركات اللي بتستخدم Xero.",e:["workflow عند invoice paid","إشعار عند overdue invoice","تزامن مع CRM"],t:"بيستخدم Xero webhooks.",lvl:"متوسط"},en:{short:"Xero accounting events",w:"Receives events from Xero like invoices, payments, and contacts.",u:"For companies using Xero.",e:["Workflow on invoice paid","Notify on overdue invoice","Sync with CRM"],t:"Uses Xero webhooks.",lvl:"Medium"}},
+{id:"invoiceninja",name:"Invoice Ninja Trigger",cat:"Finance",icon:"🧾",type:"Webhook",ar:{short:"أحداث Invoice Ninja",w:"بيستقبل events من Invoice Ninja زي invoices وpayments.",u:"للـ freelancers والشركات اللي بتستخدم Invoice Ninja.",e:["workflow عند invoice paid","follow-up عند unpaid","تحديث records"],t:"بيستخدم Invoice Ninja webhooks.",lvl:"سهل"},en:{short:"Invoice Ninja events",w:"Receives events from Invoice Ninja like invoices and payments.",u:"For freelancers and companies using Invoice Ninja.",e:["Workflow on invoice paid","Follow-up on unpaid invoice","Update records"],t:"Uses Invoice Ninja webhooks.",lvl:"Easy"}},
+];
+
+function genQuiz(pool,lang){
+  const sh=[...pool].sort(()=>Math.random()-0.5).slice(0,15);
+  const Lx=L[lang];
+  return sh.map(t=>{
+    const d=t[lang];
+    const qt=Math.floor(Math.random()*4);
+    let q,cor,gw;
+    const lvlMap={سهل:Lx.LN["سهل"],متوسط:Lx.LN["متوسط"],متقدم:Lx.LN["متقدم"],Easy:Lx.LN["Easy"],Medium:Lx.LN["Medium"],Advanced:Lx.LN["Advanced"]};
+    if(qt===0){q=`${lang==="ar"?"ما هو الـ trigger المناسب لـ":"Which trigger is right for"}: "${d.short}"?`;cor=t.name;gw=()=>pool.filter(x=>x.id!==t.id).map(x=>x.name);}
+    else if(qt===1){q=`${t.name} — ${lang==="ar"?"ما نوعه؟":"what type is it?"}`;cor=Lx.TN[t.type];gw=()=>Object.values(Lx.TN).filter(v=>v!==Lx.TN[t.type]);}
+    else if(qt===2){q=`${t.name} — ${lang==="ar"?"ما مستوى صعوبته؟":"what difficulty level?"}`;cor=lvlMap[d.lvl];gw=()=>["سهل","متوسط","متقدم"].map(x=>lvlMap[x]).filter(v=>v!==lvlMap[d.lvl]);}
+    else{q=`${lang==="ar"?"أي trigger بيستخدم لـ":"Which trigger is used for"}: "${d.e[0]}"?`;cor=t.name;gw=()=>pool.filter(x=>x.id!==t.id).map(x=>x.name);}
+    const opts=[cor,...gw().sort(()=>Math.random()-0.5).slice(0,3)].sort(()=>Math.random()-0.5);
+    return{question:q,correct:cor,opts,trigger:t};
+  });
+}
+
+function App(){
+  const [lang,setLang]=useState("ar");
+  const [mainTab,setMainTab]=useState("explore");
+  const [sel,setSel]=useState(null);
+  const [cmp,setCmp]=useState([]);
+  const [showCmp,setShowCmp]=useState(false);
+  const [cat,setCat]=useState("all");
+  const [lvl,setLvl]=useState("all");
+  const [typ,setTyp]=useState("all");
+  const [q,setQ]=useState("");
+  const [favs,setFavs]=useState([]);
+  const [tab,setTab]=useState("all");
+  const [quiz,setQuiz]=useState(null);
+  const [qi,setQi]=useState(0);
+  const [ch,setCh]=useState(null);
+  const [sc,setSc]=useState(0);
+  const [done,setDone]=useState(false);
+  const [ans,setAns]=useState([]);
+
+  const Lx=L[lang];
+  const CATS=[...new Set(T.map(t=>t.cat))];
+
+  const switchLang=(l)=>{setLang(l);setSel(null);setCat("all");setLvl("all");setTyp("all");setQ("");};
+  const tfav=(id,e)=>{e&&e.stopPropagation();setFavs(f=>f.includes(id)?f.filter(x=>x!==id):[...f,id]);};
+  const tcmp=(t,e)=>{e&&e.stopPropagation();setCmp(c=>c.find(x=>x.id===t.id)?c.filter(x=>x.id!==t.id):c.length<2?[...c,t]:[c[1],t]);};
+
+  const base=tab==="favs"?T.filter(t=>favs.includes(t.id)):T;
+  const list=base.filter(t=>{
+    const d=t[lang];
+    const mc=cat==="all"||t.cat===cat;
+    const lvlMap={سهل:"Easy",متوسط:"Medium",متقدم:"Advanced",Easy:"Easy",Medium:"Medium",Advanced:"Advanced"};
+    const tLvl=lvlMap[d.lvl]||d.lvl;
+    const ml=lvl==="all"||tLvl===lvl;
+    const mt=typ==="all"||t.type===typ;
+    const mq=t.name.toLowerCase().includes(q.toLowerCase())||d.short.toLowerCase().includes(q.toLowerCase());
+    return mc&&ml&&mt&&mq;
+  });
+
+  const startQ=()=>{setQuiz(genQuiz(T,lang));setQi(0);setSc(0);setDone(false);setCh(null);setAns([]);};
+  const pick=(opt)=>{
+    if(ch)return;setCh(opt);
+    const cor=quiz[qi].correct,ok=opt===cor;
+    if(ok)setSc(s=>s+1);
+    setAns(a=>[...a,{q:quiz[qi].question,chosen:opt,correct:cor,right:ok}]);
+    setTimeout(()=>{if(qi+1>=quiz.length){setDone(true);}else{setQi(i=>i+1);setCh(null);}},1200);
+  };
+
+  const S={minHeight:"100vh",background:"#0D0D1A",direction:Lx.dir,color:"#E0E0F0"};
+
+  const LangBar=()=>(
+    <div style={{display:"flex",gap:6,padding:"7px 12px",background:"#0A0A14",borderBottom:"1px solid #1A1A2E",justifyContent:Lx.dir==="rtl"?"flex-start":"flex-end"}}>
+      {["ar","en"].map(l=>(
+        <button key={l} onClick={()=>switchLang(l)} style={{background:lang===l?"#FF6B35":"transparent",border:"1px solid "+(lang===l?"#FF6B35":"#3A3A5A"),borderRadius:16,padding:"4px 12px",color:lang===l?"#fff":"#666688",fontSize:11,fontWeight:lang===l?700:400}}>
+          {l==="ar"?"🇸🇦 عربي":"🇬🇧 English"}
+        </button>
+      ))}
+    </div>
+  );
+
+  if(mainTab==="quiz") return(
+    <div style={S}>
+      <LangBar/>
+      <div style={{background:"linear-gradient(135deg,#1A1A2E,#16213E)",padding:"14px",borderBottom:"1px solid #2A2A4A",display:"flex",alignItems:"center",gap:9}}>
+        <button onClick={()=>setMainTab("explore")} style={{background:"transparent",border:"1px solid #3A3A5A",borderRadius:8,padding:"5px 11px",color:"#AAA",fontSize:11}}>{Lx.explore}</button>
+        <span style={{fontSize:16,fontWeight:800,background:"linear-gradient(90deg,#FFD700,#FF6B35)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>🧠 {Lx.quiz.replace("🧠 ","")}</span>
+      </div>
+      <div style={{padding:"14px"}}>
+        {!quiz&&!done&&(
+          <div style={{textAlign:"center",padding:"30px 16px"}}>
+            <div style={{fontSize:52,marginBottom:10}}>🧠</div>
+            <div style={{fontSize:17,fontWeight:800,marginBottom:5}}>{Lx.quizTitle}</div>
+            <div style={{fontSize:12,color:"#7777AA",marginBottom:18}}>{Lx.quizSub}</div>
+            <button onClick={startQ} style={{background:"linear-gradient(135deg,#FF6B35,#FFD700)",border:"none",borderRadius:12,padding:"12px 32px",color:"#000",fontSize:14,fontWeight:800}}>{Lx.startQuiz}</button>
+          </div>
+        )}
+        {quiz&&!done&&(
+          <div>
+            <div style={{display:"flex",alignItems:"center",gap:9,marginBottom:12}}>
+              <div style={{flex:1,background:"#1A1A2E",borderRadius:20,height:5}}>
+                <div style={{width:`${((qi+1)/quiz.length)*100}%`,background:"linear-gradient(90deg,#FF6B35,#FFD700)",height:"100%",borderRadius:20,transition:"width .3s"}}/>
+              </div>
+              <span style={{fontSize:11,color:"#7777AA"}}>{qi+1}/{quiz.length}</span>
+              <span style={{fontSize:11,color:"#FFD700"}}>⭐{sc}</span>
+            </div>
+            <div style={{background:cc(quiz[qi].trigger)+"11",border:"1px solid "+cc(quiz[qi].trigger)+"33",borderRadius:10,padding:"8px 12px",marginBottom:11,display:"flex",alignItems:"center",gap:8}}>
+              <span style={{fontSize:18}}>{quiz[qi].trigger.icon}</span>
+              <span style={{fontSize:10,color:"#8888AA"}}>{Lx.CN[quiz[qi].trigger.cat]||quiz[qi].trigger.cat}</span>
+            </div>
+            <div style={{background:"#1A1A2E",border:"1px solid #2A2A4A",borderRadius:12,padding:"13px",marginBottom:13,fontSize:13,lineHeight:1.8,fontWeight:600}}>{quiz[qi].question}</div>
+            <div style={{display:"flex",flexDirection:"column",gap:7}}>
+              {quiz[qi].opts.map((opt,i)=>{
+                const ic=ch===opt,cor=opt===quiz[qi].correct;
+                let bg="#1A1A2E",br="#2A2A4A",col="#E0E0F0";
+                if(ch){if(cor){bg="#0A2A0A";br="#2ECC71";col="#2ECC71";}else if(ic){bg="#2A0A0A";br="#E74C3C";col="#E74C3C";}}
+                return(<button key={i} onClick={()=>pick(opt)} style={{background:bg,border:"1px solid "+br,borderRadius:10,padding:"11px 12px",color:col,fontSize:12,cursor:ch?"default":"pointer",textAlign:Lx.dir==="rtl"?"right":"left",display:"flex",alignItems:"center",gap:8,width:"100%",transition:"all .2s"}}>
+                  <span style={{width:20,height:20,borderRadius:"50%",background:ch&&cor?"#2ECC7133":ch&&ic&&!cor?"#E74C3C33":"#ffffff11",display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,flexShrink:0}}>{ch?(cor?"✓":ic?"✗":Lx.opts[i]):Lx.opts[i]}</span>{opt}
+                </button>);
+              })}
+            </div>
+          </div>
+        )}
+        {done&&(
+          <div>
+            <div style={{textAlign:"center",padding:"18px 0 14px"}}>
+              <div style={{fontSize:48,marginBottom:8}}>{sc>=12?"🏆":sc>=8?"🎯":sc>=5?"📚":"💪"}</div>
+              <div style={{fontSize:19,fontWeight:800,marginBottom:3}}>{sc>=12?Lx.s12:sc>=8?Lx.s8:sc>=5?Lx.s5:Lx.s0}</div>
+              <div style={{fontSize:40,fontWeight:900,background:"linear-gradient(90deg,#FF6B35,#FFD700)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>{sc}/{quiz.length}</div>
+              <div style={{fontSize:11,color:"#7777AA",marginBottom:14}}>{Math.round(sc/quiz.length*100)}%</div>
+              <button onClick={startQ} style={{background:"linear-gradient(135deg,#FF6B35,#FFD700)",border:"none",borderRadius:10,padding:"10px 26px",color:"#000",fontSize:13,fontWeight:700}}>{Lx.newQuiz}</button>
+            </div>
+            <div style={{fontSize:11,color:"#7777AA",marginBottom:8,fontWeight:700}}>{Lx.reviewTitle}</div>
+            {ans.map((a,i)=>(
+              <div key={i} style={{background:a.right?"#0A2A0A":"#1A0808",border:"1px solid "+(a.right?"#2ECC7133":"#E74C3C33"),borderRadius:9,padding:"9px 11px",marginBottom:6}}>
+                <div style={{display:"flex",alignItems:"center",gap:5,marginBottom:a.right?0:3}}>
+                  <span style={{fontSize:11}}>{a.right?"✅":"❌"}</span>
+                  <div style={{fontSize:10,color:"#8888AA",lineHeight:1.5}}>{a.q}</div>
+                </div>
+                {!a.right&&<div style={{fontSize:10,color:"#2ECC71"}}>{Lx.correct} {a.correct}</div>}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+
+  if(showCmp&&cmp.length===2){
+    const [a,b]=cmp;
+    const rows=[[Lx.cat,Lx.CN[a.cat]||a.cat,Lx.CN[b.cat]||b.cat],[Lx.type,Lx.TN[a.type],Lx.TN[b.type]],[Lx.diff,Lx.LN[a[lang].lvl],Lx.LN[b[lang].lvl]],[Lx.what,a[lang].w,b[lang].w],[Lx.when,a[lang].u,b[lang].u],[Lx.tip,a[lang].t,b[lang].t]];
+    return(
+      <div style={S}>
+        <LangBar/>
+        <div style={{background:"linear-gradient(135deg,#1A1A2E,#16213E)",padding:"14px",borderBottom:"1px solid #2A2A4A",display:"flex",alignItems:"center",gap:9}}>
+          <button onClick={()=>setShowCmp(false)} style={{background:"transparent",border:"1px solid #3A3A5A",borderRadius:8,padding:"5px 11px",color:"#AAA",fontSize:11}}>{Lx.back}</button>
+          <span style={{fontSize:14,fontWeight:800}}>⚖️ {Lx.compare}</span>
+        </div>
+        <div style={{padding:"12px"}}>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:9,marginBottom:12}}>
+            {[a,b].map(t=>(<div key={t.id} style={{background:cc(t)+"22",border:"1px solid "+cc(t)+"44",borderRadius:11,padding:"11px 10px",textAlign:"center"}}>
+              <div style={{fontSize:22,marginBottom:4}}>{t.icon}</div>
+              <div style={{fontSize:11,fontWeight:700,lineHeight:1.4}}>{t.name}</div>
+            </div>))}
+          </div>
+          {rows.map(([label,va,vb],i)=>(
+            <div key={i} style={{marginBottom:8}}>
+              <div style={{fontSize:9,color:"#555588",fontWeight:700,marginBottom:5}}>{label}</div>
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:7}}>
+                {[{t:a,v:va},{t:b,v:vb}].map(({t,v})=>(<div key={t.id} style={{background:"#1A1A2E",border:"1px solid "+cc(t)+"33",borderRadius:8,padding:"8px 10px",fontSize:11,lineHeight:1.7,color:"#D8D8F0"}}>{v}</div>))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  return(
+    <div style={S}>
+      <LangBar/>
+      <div style={{background:"linear-gradient(135deg,#1A1A2E,#16213E,#0F3460)",padding:"14px 13px 11px",textAlign:"center",borderBottom:"1px solid #2A2A4A"}}>
+        <h1 style={{margin:0,fontSize:18,fontWeight:800,background:"linear-gradient(90deg,#FF6B35,#FFD700,#4ECDC4)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>{Lx.title}</h1>
+        <p style={{margin:"3px 0 0",color:"#7777AA",fontSize:10}}>{T.length} {Lx.sub}</p>
+      </div>
+      <div style={{display:"flex",borderBottom:"1px solid #2A2A4A"}}>
+        {[["explore",Lx.explore],["quiz",Lx.quiz]].map(([v,l])=>(
+          <button key={v} onClick={()=>setMainTab(v)} style={{flex:1,padding:"10px 0",background:mainTab===v?"#1A1A2E":"transparent",border:"none",borderBottom:mainTab===v?"2px solid #FF6B35":"2px solid transparent",color:mainTab===v?"#FF6B35":"#555577",fontSize:12,fontWeight:mainTab===v?700:400}}>{l}</button>
+        ))}
+      </div>
+      {!sel&&<div style={{display:"flex",borderBottom:"1px solid #1A1A2E"}}>
+        {[["all",Lx.all],["favs",Lx.favs+(favs.length>0?` (${favs.length})`:"")]].map(([v,l])=>(
+          <button key={v} onClick={()=>setTab(v)} style={{flex:1,padding:"8px 0",background:"transparent",border:"none",borderBottom:tab===v?"2px solid #4ECDC4":"2px solid transparent",color:tab===v?"#4ECDC4":"#444466",fontSize:11}}>{l}</button>
+        ))}
+      </div>}
+      {cmp.length>0&&!sel&&(
+        <div style={{background:"#1A1A2E",borderBottom:"1px solid #2A2A4A",padding:"6px 11px",display:"flex",alignItems:"center",gap:7}}>
+          <span style={{fontSize:10,color:"#7777AA",flexShrink:0}}>{Lx.compareLabel}</span>
+          <div style={{display:"flex",gap:5,flex:1,flexWrap:"wrap"}}>
+            {cmp.map(t=>(<span key={t.id} style={{background:cc(t)+"22",color:cc(t),fontSize:10,padding:"2px 8px",borderRadius:8,display:"flex",alignItems:"center",gap:4}}>
+              {t.icon} {t.name} <span onClick={()=>setCmp(c=>c.filter(x=>x.id!==t.id))} style={{cursor:"pointer",opacity:.6}}>✕</span>
+            </span>))}
+          </div>
+          {cmp.length===2&&<button onClick={()=>setShowCmp(true)} style={{background:"#4ECDC4",border:"none",borderRadius:7,padding:"4px 10px",color:"#000",fontSize:10,fontWeight:700,flexShrink:0}}>{Lx.compare}</button>}
+        </div>
+      )}
+      {!sel&&(
+        <div style={{padding:"9px 11px 0"}}>
+          <input value={q} onChange={e=>setQ(e.target.value)} placeholder={Lx.search} style={{width:"100%",background:"#1A1A2E",border:"1px solid #3A3A5A",borderRadius:10,padding:"8px 11px",color:"#E0E0F0",fontSize:12,outline:"none",boxSizing:"border-box",marginBottom:7,textAlign:Lx.dir==="rtl"?"right":"left"}}/>
+          <div style={{display:"flex",gap:4,flexWrap:"wrap",marginBottom:5}}>
+            <button onClick={()=>setCat("all")} style={{background:cat==="all"?"#FF6B35":"#1A1A2E",border:"1px solid "+(cat==="all"?"#FF6B35":"#252535"),borderRadius:14,padding:"3px 8px",color:cat==="all"?"#fff":"#555577",fontSize:9}}>{Lx.all}</button>
+            {CATS.map(c=>(<button key={c} onClick={()=>setCat(c)} style={{background:cat===c?(CC[c]||"#FF6B35"):"#1A1A2E",border:"1px solid "+(cat===c?(CC[c]||"#FF6B35"):"#252535"),borderRadius:14,padding:"3px 8px",color:cat===c?"#fff":"#555577",fontSize:9}}>{Lx.CN[c]||c}</button>))}
+          </div>
+          <div style={{display:"flex",gap:4,flexWrap:"wrap",marginBottom:7}}>
+            {[["all",Lx.diffAll],["Easy",Lx.easy],["Medium",Lx.medium],["Advanced",Lx.hard]].map(([v,l])=>{
+              const cols={Easy:"#2ECC71",Medium:"#F39C12",Advanced:"#E74C3C"};
+              return <button key={v} onClick={()=>setLvl(v)} style={{background:lvl===v?(cols[v]||"#FF6B35")+"33":"#1A1A2E",border:"1px solid "+(lvl===v?(cols[v]||"#FF6B35"):"#252535"),borderRadius:14,padding:"3px 8px",color:lvl===v?"#fff":"#555577",fontSize:9}}>{l}</button>;
+            })}
+            {[["all",Lx.filterType],...Object.entries(Lx.TN)].map(([v,l])=>(
+              <button key={v} onClick={()=>setTyp(v)} style={{background:typ===v?(TC[v]||"#FF6B35")+"33":"#1A1A2E",border:"1px solid "+(typ===v?(TC[v]||"#FF6B35"):"#252535"),borderRadius:14,padding:"3px 8px",color:typ===v?"#fff":"#555577",fontSize:9}}>{l}</button>
+            ))}
+          </div>
+          <div style={{fontSize:9,color:"#333355",marginBottom:5}}>{list.length} / {T.length}</div>
+        </div>
+      )}
+      <div style={{padding:"0 11px 20px"}}>
+        {!sel?(
+          tab==="favs"&&favs.length===0?(
+            <div style={{textAlign:"center",padding:"40px 16px",color:"#444466"}}>
+              <div style={{fontSize:34,marginBottom:8}}>⭐</div>
+              <div style={{fontSize:12,marginBottom:4}}>{Lx.noFavs}</div>
+              <div style={{fontSize:10}}>{Lx.addFavs}</div>
+            </div>
+          ):(
+            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(138px,1fr))",gap:7}}>
+              {list.map(t=>{
+                const d=t[lang];
+                return(
+                  <div key={t.id} onClick={()=>setSel(t)} style={{background:cmp.find(x=>x.id===t.id)?"#1A2A1A":"#1A1A2E",border:"1px solid "+(cmp.find(x=>x.id===t.id)?"#4ECDC4":"#252535"),borderRadius:10,padding:"11px 10px 9px",cursor:"pointer",position:"relative"}}
+                    onMouseEnter={e=>{e.currentTarget.style.borderColor=cc(t)}}
+                    onMouseLeave={e=>{e.currentTarget.style.borderColor=cmp.find(x=>x.id===t.id)?"#4ECDC4":"#252535"}}>
+                    <div style={{position:"absolute",top:5,left:5,display:"flex",gap:3}}>
+                      <button onClick={e=>tfav(t.id,e)} style={{background:"transparent",border:"none",fontSize:10,padding:0,opacity:favs.includes(t.id)?1:0.2}}>⭐</button>
+                      <button onClick={e=>tcmp(t,e)} style={{background:"transparent",border:"none",fontSize:10,padding:0,opacity:cmp.find(x=>x.id===t.id)?1:0.2}}>⚖️</button>
+                    </div>
+                    <div style={{fontSize:20,width:34,height:34,background:cc(t)+"22",borderRadius:8,display:"flex",alignItems:"center",justifyContent:"center",marginBottom:6}}>{t.icon}</div>
+                    <div style={{fontWeight:700,fontSize:10,marginBottom:2,lineHeight:1.4}}>{t.name}</div>
+                    <div style={{fontSize:9,color:"#555588",lineHeight:1.5,marginBottom:5}}>{d.short}</div>
+                    <div style={{display:"flex",gap:3,flexWrap:"wrap"}}>
+                      <span style={{background:cc(t)+"22",color:cc(t),fontSize:8,padding:"1px 5px",borderRadius:5}}>{Lx.CN[t.cat]||t.cat}</span>
+                      <span style={{background:TC[t.type]+"22",color:TC[t.type],fontSize:8,padding:"1px 5px",borderRadius:5}}>{Lx.TN[t.type]}</span>
+                      <span style={{background:dc(d.lvl)+"22",color:dc(d.lvl),fontSize:8,padding:"1px 5px",borderRadius:5}}>{Lx.LN[d.lvl]||d.lvl}</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )
+        ):(()=>{
+          const d=sel[lang];
+          const bdr=Lx.dir==="rtl"?"borderRight":"borderLeft";
+          return(
+            <div style={{display:"flex",flexDirection:"column",gap:9}}>
+              <button onClick={()=>setSel(null)} style={{background:"#1A1A2E",border:"1px solid #3A3A5A",borderRadius:8,padding:"6px 12px",color:"#E0E0F0",fontSize:11,alignSelf:"flex-start",marginTop:9}}>{Lx.back}</button>
+              <div style={{background:"linear-gradient(135deg,"+cc(sel)+"22,"+cc(sel)+"08)",border:"1px solid "+cc(sel)+"55",borderRadius:12,padding:13,display:"flex",alignItems:"center",gap:10}}>
+                <div style={{fontSize:24,width:46,height:46,background:cc(sel)+"33",borderRadius:11,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>{sel.icon}</div>
+                <div style={{flex:1}}>
+                  <div style={{display:"flex",alignItems:"center",gap:6}}>
+                    <div style={{fontWeight:800,fontSize:15}}>{sel.name}</div>
+                    <button onClick={e=>tfav(sel.id,e)} style={{background:"transparent",border:"none",fontSize:13,padding:0,opacity:favs.includes(sel.id)?1:0.3}}>⭐</button>
+                    <button onClick={e=>tcmp(sel,e)} style={{background:"transparent",border:"none",fontSize:13,padding:0,opacity:cmp.find(x=>x.id===sel.id)?1:0.3}}>⚖️</button>
+                  </div>
+                  <div style={{fontSize:10,color:"#8888AA",marginTop:2}}>{d.short}</div>
+                  <div style={{marginTop:5,display:"flex",gap:4,flexWrap:"wrap"}}>
+                    <span style={{background:cc(sel)+"22",color:cc(sel),fontSize:9,padding:"1px 7px",borderRadius:7}}>{Lx.CN[sel.cat]||sel.cat}</span>
+                    <span style={{background:TC[sel.type]+"22",color:TC[sel.type],fontSize:9,padding:"1px 7px",borderRadius:7}}>{Lx.TN[sel.type]}</span>
+                    <span style={{background:dc(d.lvl)+"22",color:dc(d.lvl),fontSize:9,padding:"1px 7px",borderRadius:7}}>{Lx.LN[d.lvl]||d.lvl}</span>
+                  </div>
+                </div>
+              </div>
+              <div style={{background:"#1A1A2E",border:"1px solid #252535",borderRadius:11,padding:12,[bdr]:"3px solid "+cc(sel)}}>
+                <div style={{fontSize:9,color:"#555588",marginBottom:5,fontWeight:700}}>{Lx.what}</div>
+                <div style={{fontSize:12,lineHeight:1.85,color:"#D8D8F0"}}>{d.w}</div>
+              </div>
+              <div style={{background:"#1A1A2E",border:"1px solid #252535",borderRadius:11,padding:12,[bdr]:"3px solid #4ECDC4"}}>
+                <div style={{fontSize:9,color:"#555588",marginBottom:5,fontWeight:700}}>{Lx.when}</div>
+                <div style={{fontSize:12,lineHeight:1.85,color:"#D8D8F0"}}>{d.u}</div>
+              </div>
+              <div style={{background:"#1A1A2E",border:"1px solid #252535",borderRadius:11,padding:12}}>
+                <div style={{fontSize:9,color:"#555588",marginBottom:9,fontWeight:700}}>{Lx.examples}</div>
+                {d.e.map((ex,i)=>(
+                  <div key={i} style={{display:"flex",gap:7,alignItems:"flex-start",marginBottom:7}}>
+                    <span style={{background:cc(sel)+"33",color:cc(sel),borderRadius:"50%",width:18,height:18,display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,fontWeight:700,flexShrink:0,marginTop:2}}>{i+1}</span>
+                    <span style={{fontSize:12,lineHeight:1.7,color:"#D8D8F0"}}>{ex}</span>
+                  </div>
+                ))}
+              </div>
+              <div style={{background:"#141408",border:"1px solid #F39C1233",borderRadius:11,padding:12,display:"flex",gap:7}}>
+                <span style={{fontSize:15,flexShrink:0}}>💡</span>
+                <div>
+                  <div style={{fontSize:9,color:"#F39C12",marginBottom:4,fontWeight:700}}>{Lx.tip}</div>
+                  <div style={{fontSize:12,lineHeight:1.85,color:"#F5CBA7"}}>{d.t}</div>
+                </div>
+              </div>
+            </div>
+          );
+        })()}
+      </div>
+      <div style={{textAlign:"center",padding:"2px 11px 12px",color:"#222244",fontSize:9}}>{list.length}/{T.length} ⚡ Ahmed ELGhamrawy</div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(App));
+</script>
+</body>
+</html>
