@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>n8n Triggers Explorer</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #0D0D1A; font-family: 'Cairo', 'Segoe UI', sans-serif; }
+  input { font-family: 'Cairo', 'Segoe UI', sans-serif; }
+  button { font-family: 'Cairo', 'Segoe UI', sans-serif; }
+  ::-webkit-scrollbar { width: 4px; height: 4px; }
+  ::-webkit-scrollbar-track { background: #0D0D1A; }
+  ::-webkit-scrollbar-thumb { background: #2A2A4A; border-radius: 4px; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState } = React;
+
+const CC={Core:"#FF6B35",Email:"#EA4335",Messaging:"#0088CC",CRM:"#FF9500",PM:"#4ECDC4",eCommerce:"#2ECC71",Dev:"#6e5494",Queue:"#FF6600",IoT:"#27AE60",Google:"#4285F4",Storage:"#8E44AD",Forms:"#45B7D1",Support:"#E74C3C",Social:"#E91E63",Database:"#009688",Marketing:"#FF5722",Calendar:"#3F51B5",HR:"#795548",Finance:"#4CAF50"};
+const TC={Webhook:"#4ECDC4",Polling:"#F39C12",Realtime:"#E74C3C",Internal:"#9B59B6"};
+const cc=t=>CC[t.cat]||"#888";
+const dc=d=>(d==="سهل"||d==="Easy")?"#2ECC71":(d==="متوسط"||d==="Medium")?"#F39C12":"#E74C3C";
+
+const I={
+ar:{dir:"rtl",explore:"📋 استكشف",quiz:"🧠 اختبر",finder:"🔍 Finder",path:"🗺️ مسار",all:"الكل",favs:"⭐ المفضلة",search:"🔍 ابحث...",back:"← رجوع",compare:"قارن",what:"📌 ما هو؟",when:"🎯 متى تستخدمه؟",examples:"💡 أمثلة",tip:"نصيحة مهمة",easy:"🟢 سهل",medium:"🟡 متوسط",hard:"🔴 متقدم",diffAll:"الكل",typeAll:"🔌 النوع",noFavs:"مفيش مفضلة لسه!",cmpLabel:"⚖️ مقارنة:",cat:"الفئة",type:"النوع",diff:"الصعوبة",quizTitle:"اختبر معلوماتك",quizSub:"15 سؤال اختيار من متعدد 🎯",startQuiz:"ابدأ الاختبار 🚀",newQuiz:"🔄 اختبار جديد",review:"مراجعة:",correct:"✓ الصح:",s0:"استمر في التعلم!",s5:"مش بطال!",s8:"كويس جداً!",s12:"ممتاز!",opts:["أ","ب","ج","د"],shareBtn:"📤 شارك نتيجتك",copyBtn:"📋 نسخ",finderSub:"اكتب إيه اللي عايز تعمله",finderPH:"مثلاً: عايز أبعت إيميل لما حد يملا فورم...",finderBtn:"ابحث",finderBest:"✨ الـ trigger المناسب:",finderAlt:"بدائل:",finderNo:"جرّب تكتب بطريقة تانية",finderEx:"جرّب مثلاً:",pathSub:"من الأساسيات للاحتراف",pathProg:"تقدمك",TN:{Webhook:"Webhook",Polling:"Polling",Realtime:"Real-time",Internal:"داخلي"},CN:{Core:"أساسي",Email:"إيميل",Messaging:"مراسلة",CRM:"CRM",PM:"مشاريع",eCommerce:"تجارة إلكترونية",Dev:"برمجة",Queue:"طوابير",IoT:"إنترنت الأشياء",Google:"Google",Storage:"تخزين",Forms:"نماذج",Support:"دعم عملاء",Social:"سوشيال",Database:"قواعد بيانات",Marketing:"تسويق",Calendar:"تقويم",HR:"موارد بشرية",Finance:"مالية"},LN:{سهل:"سهل",متوسط:"متوسط",متقدم:"متقدم",Easy:"سهل",Medium:"متوسط",Advanced:"متقدم"}},
+en:{dir:"ltr",explore:"📋 Explore",quiz:"🧠 Quiz",finder:"🔍 Finder",path:"🗺️ Path",all:"All",favs:"⭐ Favorites",search:"🔍 Search...",back:"← Back",compare:"Compare",what:"📌 What is it?",when:"🎯 When to use?",examples:"💡 Examples",tip:"Important tip",easy:"🟢 Easy",medium:"🟡 Medium",hard:"🔴 Advanced",diffAll:"All",typeAll:"🔌 Type",noFavs:"No favorites yet!",cmpLabel:"⚖️ Compare:",cat:"Category",type:"Type",diff:"Difficulty",quizTitle:"Test your n8n knowledge",quizSub:"15 multiple choice questions 🎯",startQuiz:"Start Quiz 🚀",newQuiz:"🔄 New Quiz",review:"Review:",correct:"✓ Correct:",s0:"Keep learning!",s5:"Not bad!",s8:"Very good!",s12:"Excellent!",opts:["A","B","C","D"],shareBtn:"📤 Share",copyBtn:"📋 Copy",finderSub:"Describe what you want to do",finderPH:"e.g. Send email when someone fills a form...",finderBtn:"Search",finderBest:"✨ Best trigger:",finderAlt:"Alternatives:",finderNo:"Try describing it differently",finderEx:"Try these examples:",pathSub:"From basics to mastery",pathProg:"Progress",TN:{Webhook:"Webhook",Polling:"Polling",Realtime:"Real-time",Internal:"Internal"},CN:{Core:"Core",Email:"Email",Messaging:"Messaging",CRM:"CRM",PM:"Project Mgmt",eCommerce:"eCommerce",Dev:"Dev",Queue:"Queue",IoT:"IoT",Google:"Google",Storage:"Storage",Forms:"Forms",Support:"Support",Social:"Social",Database:"Database",Marketing:"Marketing",Calendar:"Calendar",HR:"HR",Finance:"Finance"},LN:{سهل:"Easy",متوسط:"Medium",متقدم:"Advanced",Easy:"Easy",Medium:"Medium",Advanced:"Advanced"}}
+};
+
+const STAGES=[
+  {id:"s1",color:"#2ECC71",ar:"المرحلة 1: الأساسيات",en:"Stage 1: Basics",ids:["webhook","schedule","manual","form","error"]},
+  {id:"s2",color:"#4ECDC4",ar:"المرحلة 2: التواصل",en:"Stage 2: Communication",ids:["gmail","outlook","telegram","slack","emailimap"]},
+  {id:"s3",color:"#FF9500",ar:"المرحلة 3: البيانات",en:"Stage 3: Data",ids:["googlesheets","airtable","notion","hubspot","shopify"]},
+  {id:"s4",color:"#9B59B6",ar:"المرحلة 4: التطوير",en:"Stage 4: Dev",ids:["github","stripe","rabbitmq","kafka","mqtt"]},
+  {id:"s5",color:"#E74C3C",ar:"المرحلة 5: الاحتراف",en:"Stage 5: Mastery",ids:["chat","workflow","n8ntrigger","mcp","sse"]},
+];
+
+const CHALLENGES={
+  s1:{
+    ar:{title:"🔥 تحدي الأساسيات",sub:"سؤالين وأنت خلاص بتعمل automation!"},
+    en:{title:"🔥 Basics Challenge",sub:"2 questions and you're already automating!"},
+    qs:[
+      {
+        ar:{q:"عايز تشغّل workflow كل يوم الصبح الساعة 8 — إيه الـ trigger الصح؟",opts:["Webhook Trigger","Schedule Trigger","Manual Trigger","Error Trigger"],ans:1},
+        en:{q:"You want to run a workflow every morning at 8 AM — which trigger?",opts:["Webhook Trigger","Schedule Trigger","Manual Trigger","Error Trigger"],ans:1}
+      },
+      {
+        ar:{q:"نظام خارجي عايز يبعتلك HTTP request لما يحصل حاجة — إيه الـ trigger؟",opts:["Schedule Trigger","Manual Trigger","Webhook Trigger","n8n Form Trigger"],ans:2},
+        en:{q:"An external system wants to send you an HTTP request when something happens — which trigger?",opts:["Schedule Trigger","Manual Trigger","Webhook Trigger","n8n Form Trigger"],ans:2}
+      }
+    ]
+  },
+  s2:{
+    ar:{title:"🔥 تحدي التواصل",sub:"تثبت إنك عارف تتواصل مع العالم!"},
+    en:{title:"🔥 Communication Challenge",sub:"Prove you can connect with the world!"},
+    qs:[
+      {
+        ar:{q:"عايز n8n يشتغل لما تيجيله إيميل جديد في Gmail — إيه الـ trigger؟",opts:["Webhook Trigger","Gmail Trigger","Telegram Trigger","Schedule Trigger"],ans:1},
+        en:{q:"You want n8n to trigger when a new Gmail arrives — which trigger?",opts:["Webhook Trigger","Gmail Trigger","Telegram Trigger","Schedule Trigger"],ans:1}
+      },
+      {
+        ar:{q:"عايز تعمل Telegram bot يستقبل أوامر من المستخدمين — إيه الـ trigger؟",opts:["Slack Trigger","Email Trigger (IMAP)","Manual Trigger","Telegram Trigger"],ans:3},
+        en:{q:"You want a Telegram bot to receive user commands — which trigger?",opts:["Slack Trigger","Email Trigger (IMAP)","Manual Trigger","Telegram Trigger"],ans:3}
+      }
+    ]
+  },
+  s3:{
+    ar:{title:"🔥 تحدي البيانات",sub:"هل بتتحكم في البيانات ولا البيانات بتتحكم فيك؟"},
+    en:{title:"🔥 Data Challenge",sub:"Do you control the data or does data control you?"},
+    qs:[
+      {
+        ar:{q:"الفريق بيضيف rows في Google Sheets وعايز n8n يشتغل تلقائياً — إيه الـ trigger؟",opts:["Airtable Trigger","Google Drive Trigger","Google Sheets Trigger","Notion Trigger"],ans:2},
+        en:{q:"Your team adds rows in Google Sheets and you want n8n to trigger automatically — which?",opts:["Airtable Trigger","Google Drive Trigger","Google Sheets Trigger","Notion Trigger"],ans:2}
+      },
+      {
+        ar:{q:"عندك متجر Shopify وعايز workflow يشتغل لما يجي order جديد — إيه الـ trigger؟",opts:["HubSpot Trigger","Shopify Trigger","Airtable Trigger","Notion Trigger"],ans:1},
+        en:{q:"You have a Shopify store and want a workflow on each new order — which trigger?",opts:["HubSpot Trigger","Shopify Trigger","Airtable Trigger","Notion Trigger"],ans:1}
+      }
+    ]
+  },
+  s4:{
+    ar:{title:"🔥 تحدي التطوير",sub:"مش مجرد coder — ده architect!"},
+    en:{title:"🔥 Dev Challenge",sub:"Not just a coder — you're an architect!"},
+    qs:[
+      {
+        ar:{q:"عايز workflow يشتغل لما حد يعمل push لـ GitHub repository — إيه الـ trigger؟",opts:["GitLab Trigger","Netlify Trigger","GitHub Trigger","RabbitMQ Trigger"],ans:2},
+        en:{q:"You want a workflow when someone pushes to a GitHub repo — which trigger?",opts:["GitLab Trigger","Netlify Trigger","GitHub Trigger","RabbitMQ Trigger"],ans:2}
+      },
+      {
+        ar:{q:"عندك microservices وعايز تمرّر messages بينهم بضمان الـ delivery — إيه الـ trigger؟",opts:["Kafka Trigger","RabbitMQ Trigger","Redis Trigger","MQTT Trigger"],ans:1},
+        en:{q:"You have microservices and want guaranteed message delivery between them — which trigger?",opts:["Kafka Trigger","RabbitMQ Trigger","Redis Trigger","MQTT Trigger"],ans:1}
+      }
+    ]
+  },
+  s5:{
+    ar:{title:"🏆 تحدي الاحتراف",sub:"ده مش تحدي عادي — ده امتحان الخبراء!"},
+    en:{title:"🏆 Mastery Challenge",sub:"This isn't a regular challenge — it's the expert exam!"},
+    qs:[
+      {
+        ar:{q:"عايز تحوّل n8n workflow لـ tool يقدر Claude أو GPT يستخدمه — إيه الـ trigger؟",opts:["Chat Trigger","SSE Trigger","n8n Trigger","MCP Trigger"],ans:3},
+        en:{q:"You want to turn an n8n workflow into a tool that Claude or GPT can use — which trigger?",opts:["Chat Trigger","SSE Trigger","n8n Trigger","MCP Trigger"],ans:3}
+      },
+      {
+        ar:{q:"عايز تبني AI chatbot داخل n8n يتكلم مع المستخدمين — إيه الـ trigger؟",opts:["Webhook Trigger","MCP Trigger","Chat Trigger","Workflow Trigger"],ans:2},
+        en:{q:"You want to build an AI chatbot inside n8n that talks to users — which trigger?",opts:["Webhook Trigger","MCP Trigger","Chat Trigger","Workflow Trigger"],ans:2}
+      }
+    ]
+  }
+};
+
+const RULES=[
+  {kw:["فورم","form","استبيان","survey","تسجيل"],ids:["form","typeform","jotform","tally"]},
+  {kw:["إيميل","email","mail","inbox","بريد"],ids:["emailimap","gmail","outlook"]},
+  {kw:["telegram","تيليجرام","bot","بوت"],ids:["telegram"]},
+  {kw:["slack"],ids:["slack"]},
+  {kw:["whatsapp","واتساب"],ids:["whatsapp"]},
+  {kw:["وقت","schedule","يوم","daily","ساعة","automatically"],ids:["schedule"]},
+  {kw:["webhook","api","http","endpoint"],ids:["webhook"]},
+  {kw:["github","git","code","deploy","push","pr"],ids:["github","gitlab"]},
+  {kw:["payment","stripe","paypal","فلوس","دفع"],ids:["stripe","paypal"]},
+  {kw:["shopify","order","أوردر","متجر","store"],ids:["shopify","woocommerce"]},
+  {kw:["crm","lead","sales","hubspot","salesforce"],ids:["hubspot","salesforce","pipedrive"]},
+  {kw:["sheets","excel","جدول","spreadsheet"],ids:["googlesheets","airtable"]},
+  {kw:["calendar","موعد","meeting","appointment","calendly"],ids:["googlecalendar","calendly"]},
+  {kw:["chat","ai","llm","gpt","ذكاء"],ids:["chat","n8ntrigger"]},
+  {kw:["iot","mqtt","sensor","smart","ذكي"],ids:["mqtt","homeassistant"]},
+  {kw:["error","خطأ","fail","مشكلة"],ids:["error"]},
+  {kw:["manual","يدوي","test","جرّب"],ids:["manual"]},
+  {kw:["twitter","x ","social","سوشيال"],ids:["twitter","facebook"]},
+  {kw:["ticket","support","zendesk","freshdesk"],ids:["zendesk","freshdesk"]},
+  {kw:["drive","file","ملف","upload","dropbox"],ids:["googledrive","dropbox"]},
+];
+
+function findT(q,T){
+  const low=q.toLowerCase();
+  let ids=[];
+  for(const r of RULES){if(r.kw.some(k=>low.includes(k))){ids=[...ids,...r.ids];}}
+  if(!ids.length) return null;
+  const uniq=[...new Set(ids)];
+  const found=uniq.map(id=>T.find(t=>t.id===id)).filter(Boolean);
+  return found.length?{best:found[0],alts:found.slice(1,4)}:null;
+}
+
+const T=[
+  {id:"webhook",name:"Webhook Trigger",cat:"Core",icon:"🔗",type:"Webhook",ar:{short:"استقبال HTTP requests خارجية",w:"بيوفّر URL فريد يستقبل HTTP requests من أي مصدر.",u:"لما تريد ربط أي service بـ n8n.",e:["استقبال GitHub webhooks","معالجة Stripe payments","ربط أي API بـ n8n"],t:"الـ URL ده بيتغير لو انتقلت لـ production mode.",lvl:"سهل"},en:{short:"Receive external HTTP requests",w:"Provides a unique URL to receive HTTP requests from any source.",u:"When you want to connect any service to n8n.",e:["Receive GitHub webhooks","Process Stripe payments","Connect any API to n8n"],t:"The URL changes when switching to production mode.",lvl:"Easy"}},
+  {id:"schedule",name:"Schedule Trigger",cat:"Core",icon:"⏰",type:"Polling",ar:{short:"تشغيل تلقائي بجدول زمني",w:"بيشغّل الـ workflow في أوقات محددة زي cron job.",u:"للمهام المتكررة — تقارير يومية، تنظيف بيانات، إرسال تلخيصات.",e:["تقرير مبيعات كل يوم الصبح","تنظيف DB كل أسبوع","إرسال digest أسبوعي"],t:"بيستخدم التوقيت الخاص بسيرفر n8n — انتبه للـ timezone.",lvl:"سهل"},en:{short:"Run on a time schedule",w:"Triggers workflows at set times like a cron job.",u:"For recurring tasks — daily reports, data cleanup, weekly summaries.",e:["Daily sales report","Weekly DB cleanup","Weekly digest email"],t:"Uses the n8n server timezone — watch for timezone mismatches.",lvl:"Easy"}},
+  {id:"manual",name:"Manual Trigger",cat:"Core",icon:"▶️",type:"Internal",ar:{short:"تشغيل يدوي من الـ editor",w:"بيشغّل الـ workflow يدوياً من n8n editor.",u:"للاختبار والـ debugging.",e:["تجربة workflow جديد","اختبار بيانات معينة","تشغيل مرة واحدة"],t:"مش مناسب لـ production.",lvl:"سهل"},en:{short:"Manually run from n8n editor",w:"Triggers a workflow manually from the n8n editor.",u:"For testing and debugging.",e:["Test a new workflow","Test specific data","One-time runs"],t:"Not suitable for production.",lvl:"Easy"}},
+  {id:"form",name:"n8n Form Trigger",cat:"Core",icon:"📝",type:"Webhook",ar:{short:"فورم HTML جاهز من n8n",w:"بيوّلد فورم HTML جاهز، من غير ما تحتاج frontend.",u:"لجمع بيانات بشكل سريع.",e:["نموذج تسجيل","استبيان رأي","طلب دعم"],t:"بيدعم file uploads وcustom styling.",lvl:"سهل"},en:{short:"Built-in HTML form from n8n",w:"Generates a ready HTML form without needing a frontend.",u:"To collect data quickly.",e:["Registration form","Opinion survey","Support request"],t:"Supports file uploads and custom styling.",lvl:"Easy"}},
+  {id:"error",name:"Error Trigger",cat:"Core",icon:"🚨",type:"Internal",ar:{short:"تفعيل عند حدوث أخطاء",w:"بيشتغل لما workflow تاني يفشل.",u:"لإرسال تنبيهات عند الأعطال.",e:["إشعار Telegram عند فشل","سجّل الأخطاء في Sheets","email للمطور"],t:"لازم يكون في workflow منفصل.",lvl:"متوسط"},en:{short:"Activate on workflow errors",w:"Fires when another workflow fails.",u:"To send alerts on failures.",e:["Telegram on failure","Log errors to Sheets","Email the developer"],t:"Must be in a separate workflow.",lvl:"Medium"}},
+  {id:"chat",name:"Chat Trigger",cat:"Core",icon:"💬",type:"Webhook",ar:{short:"واجهة chat مع AI",w:"بيوفّر chat interface لتشغيل AI workflows.",u:"لبناء AI assistants وchatbots.",e:["customer support bot","HR assistant","sales assistant"],t:"بيدعم memory وtools مع AI Agent node.",lvl:"متوسط"},en:{short:"Chat interface for AI workflows",w:"Provides a chat interface to trigger AI workflows.",u:"To build AI assistants and chatbots.",e:["Customer support bot","HR assistant","Sales assistant"],t:"Supports memory and tools with AI Agent node.",lvl:"Medium"}},
+  {id:"workflow",name:"Workflow Trigger (Execute)",cat:"Core",icon:"⚡",type:"Internal",ar:{short:"استدعاء workflow من workflow تاني",w:"بيخلّي workflow تاني يستدعيه ويبعتله data.",u:"لتقسيم workflows الكبيرة لأجزاء صغيرة.",e:["sub-workflow للتحقق من بيانات","استدعاء workflow مشترك","orchestration"],t:"بيدعم passing data بين الـ workflows.",lvl:"متوسط"},en:{short:"Call a workflow from another workflow",w:"Allows another workflow to call it and pass data.",u:"To split large workflows into smaller parts.",e:["Sub-workflow for validation","Shared workflow call","Orchestration"],t:"Supports data passing between workflows.",lvl:"Medium"}},
+  {id:"n8ntrigger",name:"n8n Trigger",cat:"Core",icon:"🔔",type:"Internal",ar:{short:"أحداث داخل n8n نفسه",w:"بيشتغل عند أحداث داخل n8n زي workflow updates.",u:"لمراقبة n8n نفسه.",e:["إشعار عند تعديل workflow","تتبع execution history","audit logs"],t:"خاص بـ n8n instance.",lvl:"متقدم"},en:{short:"n8n internal events",w:"Fires on n8n internal events like workflow updates.",u:"To monitor n8n itself.",e:["Notify on workflow edit","Track execution history","Audit logs"],t:"Specific to the n8n instance.",lvl:"Advanced"}},
+  {id:"mcp",name:"MCP Trigger",cat:"Core",icon:"🤖",type:"Webhook",ar:{short:"Model Context Protocol server",w:"بيحوّل n8n workflow لـ MCP server يقدر AI يستخدمه.",u:"لربط n8n بـ AI models زي Claude وGPT.",e:["Claude يستخدم n8n tools","AI agent يشغّل workflows","ربط AI بـ real-world actions"],t:"مش موجود في كل إصدارات n8n.",lvl:"متقدم"},en:{short:"Model Context Protocol server",w:"Converts an n8n workflow into an MCP server usable by AI.",u:"To connect n8n to AI models like Claude and GPT.",e:["Claude uses n8n tools","AI agent runs workflows","Connect AI to real-world actions"],t:"Not available in all n8n versions.",lvl:"Advanced"}},
+  {id:"sse",name:"SSE Trigger",cat:"Core",icon:"📡",type:"Realtime",ar:{short:"استقبال Server-Sent Events",w:"بيستقبل real-time events من SSE endpoint.",u:"لـ streaming data زي LLM responses.",e:["استقبال AI streaming","real-time dashboard","live feed"],t:"أحادي الاتجاه من السيرفر للـ workflow.",lvl:"متقدم"},en:{short:"Receive Server-Sent Events",w:"Receives real-time events from an SSE endpoint.",u:"For streaming data like LLM responses.",e:["Receive AI streaming","Real-time dashboard","Live feed"],t:"One-way from server to workflow.",lvl:"Advanced"}},
+  {id:"emailimap",name:"Email Trigger (IMAP)",cat:"Email",icon:"📧",type:"Polling",ar:{short:"استقبال إيميلات عبر IMAP",w:"بيراقب inbox عبر IMAP ويشغّل workflow لكل إيميل جديد.",u:"لأتمتة معالجة الإيميلات.",e:["معالجة طلبات العملاء","استخراج مرفقات","رد تلقائي"],t:"IMAP مش real-time — بيعمل polling كل دقيقة أو أكتر.",lvl:"سهل"},en:{short:"Receive emails via IMAP",w:"Monitors an inbox via IMAP and triggers on new emails.",u:"To automate email processing.",e:["Process customer requests","Extract attachments","Auto-reply"],t:"IMAP is not real-time — polls every minute or more.",lvl:"Easy"}},
+  {id:"gmail",name:"Gmail Trigger",cat:"Email",icon:"📬",type:"Polling",ar:{short:"استقبال إيميلات Gmail",w:"بيراقب Gmail ويشغّل workflow لما تيجي إيميلات.",u:"لو شغال مع Google Workspace.",e:["معالجة طلبات","تنظيم وأرشفة","extract بيانات"],t:"بيعمل polling — مش real-time زي IMAP Push.",lvl:"سهل"},en:{short:"Receive Gmail emails",w:"Monitors Gmail and triggers on new emails.",u:"If working with Google Workspace.",e:["Process requests","Organize and archive","Extract data"],t:"Uses polling — not real-time like IMAP Push.",lvl:"Easy"}},
+  {id:"outlook",name:"Microsoft Outlook Trigger",cat:"Email",icon:"📮",type:"Polling",ar:{short:"استقبال إيميلات Outlook",w:"بيراقب Outlook ويشغّل workflow لما تيجي إيميلات جديدة.",u:"لو شغال مع Microsoft 365.",e:["معالجة طلبات","extract بيانات","تنظيم وأرشفة"],t:"بيعمل polling — مش real-time.",lvl:"سهل"},en:{short:"Receive Outlook emails",w:"Monitors Outlook and triggers on new emails.",u:"If working with Microsoft 365.",e:["Process requests","Extract data","Organize and archive"],t:"Uses polling — not real-time.",lvl:"Easy"}},
+  {id:"telegram",name:"Telegram Trigger",cat:"Messaging",icon:"✈️",type:"Webhook",ar:{short:"استقبال رسائل Telegram",w:"بيستقبل رسائل من Telegram bot عبر webhook.",u:"للـ bots والإشعارات.",e:["bot للأوامر","إشعارات النظام","معالجة طلبات"],t:"بتحتاج BotFather وbot token.",lvl:"سهل"},en:{short:"Receive Telegram messages",w:"Receives messages from a Telegram bot via webhook.",u:"For bots and notifications.",e:["Command bot","System notifications","Process requests"],t:"Requires BotFather and bot token.",lvl:"Easy"}},
+  {id:"slack",name:"Slack Trigger",cat:"Messaging",icon:"💼",type:"Webhook",ar:{short:"أحداث Slack",w:"بيستقبل events من Slack زي رسائل وردود.",u:"لأتمتة workflows مرتبطة بـ Slack.",e:["bot بيرد على أسئلة","workflow عند mention","إشعارات للفريق"],t:"بتحتاج Slack App وEvent Subscriptions.",lvl:"متوسط"},en:{short:"Slack events",w:"Receives events like messages and reactions.",u:"To automate Slack-related workflows.",e:["Bot answers questions","Workflow on mention","Team notifications"],t:"Requires Slack App and Event Subscriptions.",lvl:"Medium"}},
+  {id:"whatsapp",name:"WhatsApp Business Trigger",cat:"Messaging",icon:"📱",type:"Webhook",ar:{short:"رسائل WhatsApp Business",w:"بيستقبل رسائل من WhatsApp Business API.",u:"للشركات اللي عندها WhatsApp Business.",e:["رد تلقائي على استفسارات","معالجة طلبات","إرسال confirmations"],t:"بتحتاج Meta Business Account.",lvl:"متقدم"},en:{short:"WhatsApp Business messages",w:"Receives messages from WhatsApp Business API.",u:"For businesses with WhatsApp Business.",e:["Auto-reply to inquiries","Process orders","Send confirmations"],t:"Requires Meta Business Account.",lvl:"Advanced"}},
+  {id:"teams",name:"Microsoft Teams Trigger",cat:"Messaging",icon:"🏢",type:"Webhook",ar:{short:"أحداث Microsoft Teams",w:"بيستقبل events من Teams زي رسائل في channels.",u:"للشركات اللي بتستخدم Microsoft 365.",e:["workflow عند ذكر bot","معالجة commands","ربط Teams بأنظمة"],t:"بتحتاج Microsoft 365 وBot registration.",lvl:"متوسط"},en:{short:"Microsoft Teams events",w:"Receives Teams events like channel messages.",u:"For companies using Microsoft 365.",e:["Workflow when bot mentioned","Handle commands","Connect Teams"],t:"Requires Microsoft 365 and Bot registration.",lvl:"Medium"}},
+  {id:"hubspot",name:"HubSpot Trigger",cat:"CRM",icon:"🟠",type:"Webhook",ar:{short:"أحداث HubSpot CRM",w:"بيستقبل events زي contacts جديدة أو deals.",u:"للشركات اللي بتستخدم HubSpot.",e:["workflow عند deal جديد","تحديث نظام تاني","إشعار عند lead جديد"],t:"بيستخدم HubSpot webhooks.",lvl:"متوسط"},en:{short:"HubSpot CRM events",w:"Receives events like new contacts or deals.",u:"For companies using HubSpot.",e:["Workflow on new deal","Update another system","Notify on new lead"],t:"Uses HubSpot webhooks.",lvl:"Medium"}},
+  {id:"salesforce",name:"Salesforce Trigger",cat:"CRM",icon:"☁️",type:"Webhook",ar:{short:"أحداث Salesforce CRM",w:"بيستقبل events زي leads وopportunities.",u:"للشركات الكبيرة.",e:["workflow عند opportunity","تزامن مع أنظمة","إشعارات عند تغيير stage"],t:"بتحتاج Salesforce developer account.",lvl:"متقدم"},en:{short:"Salesforce CRM events",w:"Receives events like leads and opportunities.",u:"For large companies.",e:["Workflow on opportunity","Sync with systems","Notify on stage change"],t:"Requires Salesforce developer account.",lvl:"Advanced"}},
+  {id:"pipedrive",name:"Pipedrive Trigger",cat:"CRM",icon:"🔵",type:"Webhook",ar:{short:"أحداث Pipedrive deals",w:"بيستقبل events من Pipedrive زي deals جديدة.",u:"للشركات اللي بتستخدم Pipedrive.",e:["إشعار لما deal تتحول لـ Won","تحديث Sheets","task في Asana"],t:"بيستخدم Pipedrive webhooks.",lvl:"متوسط"},en:{short:"Pipedrive deal events",w:"Receives events like new deals or stage changes.",u:"For companies using Pipedrive.",e:["Notify when deal turns Won","Update Sheets","Task in Asana"],t:"Uses Pipedrive webhooks.",lvl:"Medium"}},
+  {id:"asana",name:"Asana Trigger",cat:"PM",icon:"🎯",type:"Webhook",ar:{short:"أحداث Asana tasks",w:"بيستقبل events من Asana زي tasks جديدة.",u:"للفرق اللي بتستخدم Asana.",e:["إشعار Slack عند task جديد","workflow عند task مكتمل","ربط بـ time tracking"],t:"بيستخدم Asana webhooks.",lvl:"متوسط"},en:{short:"Asana task events",w:"Receives events like new or completed tasks.",u:"For teams using Asana.",e:["Slack notify on new task","Workflow on task complete","Link to time tracking"],t:"Uses Asana webhooks.",lvl:"Medium"}},
+  {id:"jira",name:"Jira Trigger",cat:"PM",icon:"🐛",type:"Webhook",ar:{short:"أحداث Jira issues",w:"بيستقبل events من Jira زي issues جديدة.",u:"لفرق الـ development.",e:["إشعار عند bug جديد","workflow عند Done","ربط بـ Slack"],t:"بتحتاج Jira admin لتضبط webhooks.",lvl:"متوسط"},en:{short:"Jira issue events",w:"Receives events like new issues or status changes.",u:"For development teams.",e:["Notify on new bug","Workflow on Done","Link to Slack"],t:"Requires Jira admin for webhooks.",lvl:"Medium"}},
+  {id:"clickup",name:"ClickUp Trigger",cat:"PM",icon:"✅",type:"Webhook",ar:{short:"أحداث ClickUp tasks",w:"بيستقبل events من ClickUp زي tasks وstatus changes.",u:"للفرق اللي بتستخدم ClickUp.",e:["إشعار عند task جديد","workflow عند deadline","ربط بـ calendar"],t:"بيستخدم ClickUp webhooks.",lvl:"متوسط"},en:{short:"ClickUp task events",w:"Receives events like tasks and status changes.",u:"For teams using ClickUp.",e:["Notify on new task","Workflow on deadline","Link to calendar"],t:"Uses ClickUp webhooks.",lvl:"Medium"}},
+  {id:"notion",name:"Notion Trigger",cat:"PM",icon:"📓",type:"Polling",ar:{short:"أحداث Notion databases",w:"بيراقب Notion database ويشغّل الـ workflow لما تتضاف records.",u:"للفرق اللي بتستخدم Notion.",e:["workflow عند page جديدة","تزامن مع أنظمة","إشعار عند تغيير status"],t:"بيعمل polling — مش real-time.",lvl:"متوسط"},en:{short:"Notion database events",w:"Monitors a database and triggers when records are added.",u:"For teams using Notion.",e:["Workflow on new page","Sync with systems","Notify on status change"],t:"Uses polling — not real-time.",lvl:"Medium"}},
+  {id:"trello",name:"Trello Trigger",cat:"PM",icon:"📌",type:"Webhook",ar:{short:"أحداث Trello boards",w:"بيستقبل events من Trello زي cards جديدة.",u:"للفرق اللي بتستخدم Trello.",e:["إشعار عند card جديدة","workflow عند نقل لـ Done","ربط بـ calendar"],t:"بيستخدم Trello webhooks.",lvl:"سهل"},en:{short:"Trello board events",w:"Receives events like new cards or card moves.",u:"For teams using Trello.",e:["Notify on new card","Workflow when moved to Done","Link to calendar"],t:"Uses Trello webhooks.",lvl:"Easy"}},
+  {id:"linear",name:"Linear Trigger",cat:"PM",icon:"🔺",type:"Webhook",ar:{short:"أحداث Linear issues",w:"بيستقبل events من Linear زي issues.",u:"لفرق الـ engineering.",e:["إشعار عند issue جديد","ربط بـ GitHub","تتبع cycle"],t:"بيستخدم Linear webhooks.",lvl:"متوسط"},en:{short:"Linear issue events",w:"Receives events like new issues.",u:"For engineering teams.",e:["Notify on new issue","Link to GitHub","Track cycle"],t:"Uses Linear webhooks.",lvl:"Medium"}},
+  {id:"shopify",name:"Shopify Trigger",cat:"eCommerce",icon:"🛍️",type:"Webhook",ar:{short:"أحداث Shopify (orders, products)",w:"بيستقبل events من Shopify زي orders وpayments.",u:"لمتاجر Shopify.",e:["workflow عند order جديد","تحديث inventory","إشعار فريق التوصيل"],t:"بيستخدم Shopify webhooks.",lvl:"متوسط"},en:{short:"Shopify events (orders, products)",w:"Receives events like orders and payments.",u:"For Shopify stores.",e:["Workflow on new order","Update inventory","Notify delivery team"],t:"Uses Shopify webhooks.",lvl:"Medium"}},
+  {id:"woocommerce",name:"WooCommerce Trigger",cat:"eCommerce",icon:"🛒",type:"Webhook",ar:{short:"أحداث WooCommerce orders",w:"بيستقبل events من WooCommerce زي orders جديدة.",u:"لمتاجر WooCommerce.",e:["workflow عند order","تحديث CRM","إشعار عند cancelled"],t:"بيستخدم WooCommerce webhooks.",lvl:"متوسط"},en:{short:"WooCommerce order events",w:"Receives events like new orders.",u:"For WooCommerce stores.",e:["Workflow on order","Update CRM","Notify on cancellation"],t:"Uses WooCommerce webhooks.",lvl:"Medium"}},
+  {id:"stripe",name:"Stripe Trigger",cat:"eCommerce",icon:"💳",type:"Webhook",ar:{short:"أحداث Stripe payments",w:"بيستقبل events من Stripe زي payments وsubscriptions.",u:"لأي تطبيق بيستخدم Stripe.",e:["workflow عند payment","إلغاء access عند فشل","إشعار عند refund"],t:"آمن جداً بـ signature verification.",lvl:"متوسط"},en:{short:"Stripe payment events",w:"Receives events like payments and subscriptions.",u:"For any app using Stripe.",e:["Workflow on payment","Revoke access on failure","Notify on refund"],t:"Very secure with signature verification.",lvl:"Medium"}},
+  {id:"paypal",name:"PayPal Trigger",cat:"eCommerce",icon:"💰",type:"Webhook",ar:{short:"أحداث PayPal payments",w:"بيستقبل events من PayPal زي payments وrefunds.",u:"لأي تطبيق بيستخدم PayPal.",e:["workflow عند payment","تحديث DB عند refund","إشعار عند dispute"],t:"تأكد من التحقق من authenticity.",lvl:"متوسط"},en:{short:"PayPal payment events",w:"Receives events like payments and refunds.",u:"For any app using PayPal.",e:["Workflow on payment","Update DB on refund","Notify on dispute"],t:"Verify request authenticity.",lvl:"Medium"}},
+  {id:"github",name:"GitHub Trigger",cat:"Dev",icon:"🐙",type:"Webhook",ar:{short:"أحداث GitHub (push, PR, issues)",w:"بيستقبل GitHub webhooks عند push أو pull requests أو issues.",u:"لأتمتة CI/CD وإدارة issues.",e:["إشعار Slack عند PR","deployment عند merge","task في Jira عند Issue"],t:"تضبط webhook في إعدادات الـ repository.",lvl:"متوسط"},en:{short:"GitHub events (push, PR, issues)",w:"Receives webhooks on push, pull requests, or issues.",u:"To automate CI/CD and issue management.",e:["Slack notify on PR","Deploy on merge","Jira task on Issue"],t:"Set up webhook in repository settings.",lvl:"Medium"}},
+  {id:"gitlab",name:"GitLab Trigger",cat:"Dev",icon:"🦊",type:"Webhook",ar:{short:"أحداث GitLab",w:"بيستقبل GitLab webhooks عند push أو merge requests.",u:"للفرق اللي بتستخدم GitLab.",e:["إشعار عند merge request","deployment عند نجاح","إشعار عند فشل pipeline"],t:"تضبط webhook في إعدادات الـ project.",lvl:"متوسط"},en:{short:"GitLab events",w:"Receives webhooks on push or merge requests.",u:"For teams using GitLab.",e:["Notify on merge request","Deploy on success","Alert on failed pipeline"],t:"Set up webhook in project settings.",lvl:"Medium"}},
+  {id:"netlify",name:"Netlify Trigger",cat:"Dev",icon:"🌐",type:"Webhook",ar:{short:"أحداث Netlify deployments",w:"بيستقبل events من Netlify زي deploy success أو fail.",u:"للمواقع على Netlify.",e:["إشعار عند deploy ناجح","workflow عند form","alert عند فشل"],t:"بيستخدم Netlify webhooks.",lvl:"سهل"},en:{short:"Netlify deployment events",w:"Receives events like deploy success or failure.",u:"For websites on Netlify.",e:["Notify on deploy","Workflow on form","Alert on failure"],t:"Uses Netlify webhooks.",lvl:"Easy"}},
+  {id:"rabbitmq",name:"RabbitMQ Trigger",cat:"Queue",icon:"🐇",type:"Realtime",ar:{short:"استقبال messages من RabbitMQ",w:"بيستمع لـ RabbitMQ queue ويشغّل الـ workflow لما تيجي message.",u:"في الأنظمة المعقدة.",e:["معالجة orders","تنسيق microservices","background jobs"],t:"بيضمن delivery مرة واحدة لكل message.",lvl:"متقدم"},en:{short:"Receive RabbitMQ messages",w:"Listens to a queue and triggers when a message arrives.",u:"In complex systems using message queues.",e:["Process orders","Coordinate microservices","Background jobs"],t:"Guarantees once-only delivery per message.",lvl:"Advanced"}},
+  {id:"kafka",name:"Kafka Trigger",cat:"Queue",icon:"🌊",type:"Realtime",ar:{short:"الاشتراك في Kafka topics",w:"بيشترك في Kafka topic ويعالج events بحجم كبير.",u:"للأنظمة الكبيرة.",e:["user activity events real-time","data pipeline","تزامن أنظمة كبيرة"],t:"أقوى من RabbitMQ لكن أصعب في الإعداد.",lvl:"متقدم"},en:{short:"Subscribe to Kafka topics",w:"Subscribes to a topic and processes high-volume events.",u:"For large-scale systems.",e:["Real-time user activity","Data pipeline","Sync large systems"],t:"More powerful than RabbitMQ but harder to set up.",lvl:"Advanced"}},
+  {id:"redis",name:"Redis Trigger",cat:"Queue",icon:"🔴",type:"Realtime",ar:{short:"الاستماع لـ Redis pub/sub",w:"بيستمع لـ Redis pub/sub channels.",u:"للـ real-time messaging السريع.",e:["real-time notifications","job queue سريع","تزامن النظام"],t:"مش بيحفظ الرسائل افتراضياً — استخدم Streams.",lvl:"متقدم"},en:{short:"Listen to Redis pub/sub",w:"Listens to Redis pub/sub channels.",u:"For fast real-time messaging.",e:["Real-time notifications","Fast job queue","System state sync"],t:"Doesn't persist messages — use Streams.",lvl:"Advanced"}},
+  {id:"mqtt",name:"MQTT Trigger",cat:"IoT",icon:"📡",type:"Realtime",ar:{short:"استقبال رسائل IoT عبر MQTT",w:"بيشترك في MQTT topic ويستقبل بيانات من IoT وsensors.",u:"لو عندك IoT devices.",e:["قراءات temperature","automation عند حركة","مراقبة أجهزة المصنع"],t:"بتحتاج MQTT broker زي Mosquitto.",lvl:"متقدم"},en:{short:"Receive IoT messages via MQTT",w:"Subscribes and receives data from IoT devices and sensors.",u:"If you have IoT devices.",e:["Temperature readings","Motion automation","Factory monitoring"],t:"Requires an MQTT broker like Mosquitto.",lvl:"Advanced"}},
+  {id:"homeassistant",name:"Home Assistant Trigger",cat:"IoT",icon:"🏠",type:"Webhook",ar:{short:"أحداث Home Assistant",w:"بيستقبل events من Home Assistant زي state changes.",u:"لـ smart home.",e:["workflow عند lights","إشعار عند door","أتمتة presence"],t:"بتحتاج Home Assistant وLong-Lived Access Token.",lvl:"متوسط"},en:{short:"Home Assistant events",w:"Receives events like state changes from Home Assistant.",u:"For smart home automation.",e:["Workflow when lights on","Notify when door opens","Presence automation"],t:"Requires Home Assistant and Long-Lived Access Token.",lvl:"Medium"}},
+  {id:"googlesheets",name:"Google Sheets Trigger",cat:"Google",icon:"📊",type:"Polling",ar:{short:"تغييرات في Google Sheets",w:"بيراقب Google Sheets ويشغّل الـ workflow لما تتضاف صفوف.",u:"للفرق اللي بتستخدم Sheets كـ database.",e:["معالجة بيانات جديدة","workflow عند row جديد","تزامن مع CRM"],t:"بيعمل polling — مش real-time.",lvl:"سهل"},en:{short:"Google Sheets changes",w:"Monitors Sheets and triggers when new rows are added.",u:"For teams using Sheets as a database.",e:["Process new data","Workflow on new row","Sync with CRM"],t:"Uses polling — not real-time.",lvl:"Easy"}},
+  {id:"googledrive",name:"Google Drive Trigger",cat:"Google",icon:"💾",type:"Polling",ar:{short:"تغييرات ملفات Google Drive",w:"بيراقب Google Drive ويشغّل الـ workflow لما تتضاف ملفات.",u:"للفرق اللي بتشارك ملفات.",e:["معالجة ملفات جديدة","workflow عند upload","تزامن مع storage"],t:"بيعمل polling — حدّد الـ folder.",lvl:"سهل"},en:{short:"Google Drive file changes",w:"Monitors Drive and triggers when files are added.",u:"For teams sharing files.",e:["Process new files","Workflow on upload","Sync with storage"],t:"Uses polling — specify the folder.",lvl:"Easy"}},
+  {id:"googlecalendar",name:"Google Calendar Trigger",cat:"Google",icon:"📅",type:"Polling",ar:{short:"أحداث Google Calendar",w:"بيراقب Calendar ويشغّل الـ workflow عند events جديدة.",u:"لأتمتة workflows مرتبطة بالجداول.",e:["إشعار قبل meeting","workflow عند event","تزامن مع CRM"],t:"بيعمل polling.",lvl:"سهل"},en:{short:"Google Calendar events",w:"Monitors Calendar and triggers when new events are created.",u:"To automate schedule-related workflows.",e:["Remind before meeting","Workflow on new event","Sync with CRM"],t:"Uses polling.",lvl:"Easy"}},
+  {id:"dropbox",name:"Dropbox Trigger",cat:"Storage",icon:"📦",type:"Webhook",ar:{short:"تغييرات ملفات Dropbox",w:"بيراقب Dropbox ويشغّل الـ workflow لما تتضاف ملفات.",u:"للفرق اللي بتستخدم Dropbox.",e:["معالجة ملفات جديدة","workflow عند upload","تزامن مع storage"],t:"بيستخدم Dropbox webhooks.",lvl:"سهل"},en:{short:"Dropbox file changes",w:"Monitors Dropbox and triggers when files are added.",u:"For teams using Dropbox.",e:["Process new files","Workflow on upload","Sync with storage"],t:"Uses Dropbox webhooks.",lvl:"Easy"}},
+  {id:"typeform",name:"Typeform Trigger",cat:"Forms",icon:"📋",type:"Webhook",ar:{short:"إجابات Typeform جديدة",w:"بيشتغل لما حد يكمّل Typeform.",u:"لجمع بيانات بـ UX ممتازة.",e:["حفظ leads في CRM","إرسال confirmation","إنشاء account"],t:"بيستخدم Typeform webhooks.",lvl:"سهل"},en:{short:"New Typeform submissions",w:"Fires when someone completes a Typeform.",u:"To collect data with excellent UX.",e:["Save leads to CRM","Send confirmation","Create account"],t:"Uses Typeform webhooks.",lvl:"Easy"}},
+  {id:"jotform",name:"JotForm Trigger",cat:"Forms",icon:"📄",type:"Webhook",ar:{short:"إجابات JotForm جديدة",w:"بيشتغل لما حد يبعت JotForm.",u:"للـ forms المعقدة.",e:["معالجة طلبات مع مرفقات","payment form","إنشاء ticket"],t:"بيستخدم JotForm webhooks.",lvl:"سهل"},en:{short:"New JotForm submissions",w:"Fires when someone submits a JotForm.",u:"For complex forms.",e:["Process requests with attachments","Payment form","Create ticket"],t:"Uses JotForm webhooks.",lvl:"Easy"}},
+  {id:"tally",name:"Tally Trigger",cat:"Forms",icon:"🗂️",type:"Webhook",ar:{short:"إجابات Tally forms",w:"بديل مجاني لـ Typeform.",u:"لجمع بيانات ببساطة.",e:["حفظ في Airtable","إيميل ترحيب","إنشاء task"],t:"بيستخدم Tally webhooks.",lvl:"سهل"},en:{short:"New Tally submissions",w:"Free Typeform alternative.",u:"To collect data simply.",e:["Save to Airtable","Welcome email","Create task"],t:"Uses Tally webhooks.",lvl:"Easy"}},
+  {id:"zendesk",name:"Zendesk Trigger",cat:"Support",icon:"🎫",type:"Webhook",ar:{short:"أحداث Zendesk tickets",w:"بيستقبل events من Zendesk زي tickets جديدة.",u:"للشركات اللي بتستخدم Zendesk.",e:["إشعار عند ticket جديد","escalation","تحديث CRM"],t:"بيستخدم Zendesk webhooks.",lvl:"متوسط"},en:{short:"Zendesk ticket events",w:"Receives events like new tickets.",u:"For companies using Zendesk.",e:["Notify on new ticket","Escalation","Update CRM"],t:"Uses Zendesk webhooks.",lvl:"Medium"}},
+  {id:"freshdesk",name:"Freshdesk Trigger",cat:"Support",icon:"🌱",type:"Webhook",ar:{short:"أحداث Freshdesk tickets",w:"بيستقبل events من Freshdesk زي tickets جديدة.",u:"للشركات اللي بتستخدم Freshdesk.",e:["إشعار عند ticket","SLA breach","تحديث CRM"],t:"بيستخدم Freshdesk webhooks.",lvl:"متوسط"},en:{short:"Freshdesk ticket events",w:"Receives events like new tickets.",u:"For companies using Freshdesk.",e:["Notify on ticket","SLA breach","Update CRM"],t:"Uses Freshdesk webhooks.",lvl:"Medium"}},
+  {id:"intercom",name:"Intercom Trigger",cat:"Support",icon:"💬",type:"Webhook",ar:{short:"أحداث Intercom conversations",w:"بيستقبل events من Intercom زي conversations جديدة.",u:"للشركات اللي بتستخدم Intercom.",e:["workflow عند conversation","إضافة lead لـ CRM","إشعار high-value user"],t:"بيستخدم Intercom webhooks.",lvl:"متوسط"},en:{short:"Intercom conversation events",w:"Receives events like new conversations.",u:"For companies using Intercom.",e:["Workflow on conversation","Add lead to CRM","Notify on high-value user"],t:"Uses Intercom webhooks.",lvl:"Medium"}},
+  {id:"twitter",name:"X (Twitter) Trigger",cat:"Social",icon:"🐦",type:"Polling",ar:{short:"أحداث Twitter/X",w:"بيستقبل events من Twitter/X زي mentions.",u:"لمراقبة brand mentions.",e:["إشعار عند mention","monitoring hashtags","ردود تلقائية"],t:"بتحتاج Twitter API v2.",lvl:"متوسط"},en:{short:"Twitter/X events",w:"Receives events like mentions.",u:"To monitor brand mentions.",e:["Notify on mention","Monitor hashtags","Auto-reply"],t:"Requires Twitter API v2.",lvl:"Medium"}},
+  {id:"facebook",name:"Facebook Lead Ads Trigger",cat:"Social",icon:"👤",type:"Webhook",ar:{short:"leads جديدة من Facebook",w:"بيشتغل لما حد يملّا Facebook Lead Ad.",u:"لأتمتة leads من Facebook.",e:["إضافة lead لـ CRM","welcome email","إشعار المبيعات"],t:"بتحتاج Facebook Business account.",lvl:"متوسط"},en:{short:"New Facebook leads",w:"Fires when someone fills a Facebook Lead Ad.",u:"To automate Facebook lead processing.",e:["Add lead to CRM","Welcome email","Notify sales"],t:"Requires Facebook Business account.",lvl:"Medium"}},
+  {id:"airtable",name:"Airtable Trigger",cat:"Database",icon:"🗄️",type:"Polling",ar:{short:"تغييرات في Airtable records",w:"بيراقب Airtable ويشغّل الـ workflow لما تتضاف records.",u:"للفرق اللي بتستخدم Airtable.",e:["workflow عند record جديد","تزامن مع CRM","إشعار عند تغيير status"],t:"بيعمل polling — حدّد الـ trigger field.",lvl:"سهل"},en:{short:"Airtable record changes",w:"Monitors Airtable and triggers when records are added.",u:"For teams using Airtable.",e:["Workflow on new record","Sync with CRM","Notify on status change"],t:"Uses polling — specify trigger field.",lvl:"Easy"}},
+  {id:"supabase",name:"Supabase Trigger",cat:"Database",icon:"⚡",type:"Webhook",ar:{short:"تغييرات Supabase tables",w:"بيستقبل events من Supabase database.",u:"لـ apps على Supabase.",e:["workflow عند user جديد","معالجة orders","إشعار عند change"],t:"بيستخدم Supabase webhooks.",lvl:"متوسط"},en:{short:"Supabase table changes",w:"Receives events from Supabase database.",u:"For apps built on Supabase.",e:["Workflow on new user","Process orders","Notify on change"],t:"Uses Supabase webhooks.",lvl:"Medium"}},
+  {id:"activecampaign",name:"ActiveCampaign Trigger",cat:"Marketing",icon:"📢",type:"Webhook",ar:{short:"أحداث ActiveCampaign",w:"بيستقبل events زي contacts جديدة.",u:"للشركات اللي بتستخدم ActiveCampaign.",e:["workflow عند contact","تحديث CRM","إشعار عند automation"],t:"بيستخدم ActiveCampaign webhooks.",lvl:"متوسط"},en:{short:"ActiveCampaign events",w:"Receives events like new contacts.",u:"For companies using ActiveCampaign.",e:["Workflow on contact","Update CRM","Notify on automation"],t:"Uses ActiveCampaign webhooks.",lvl:"Medium"}},
+  {id:"convertkit",name:"ConvertKit Trigger",cat:"Marketing",icon:"🎨",type:"Webhook",ar:{short:"أحداث ConvertKit",w:"بيستقبل events من ConvertKit زي subscribers.",u:"للـ creators.",e:["workflow عند subscriber","إضافة لـ course","تحديث membership"],t:"بيستخدم ConvertKit webhooks.",lvl:"متوسط"},en:{short:"ConvertKit events",w:"Receives events like subscribers.",u:"For creators.",e:["Workflow on subscriber","Add to course","Update membership"],t:"Uses ConvertKit webhooks.",lvl:"Medium"}},
+  {id:"calendly",name:"Calendly Trigger",cat:"Calendar",icon:"📅",type:"Webhook",ar:{short:"حجوزات Calendly",w:"بيشتغل لما حد يحجز موعد أو يلغيه.",u:"للـ consultants.",e:["إضافة booking لـ CRM","confirmation مخصص","Zoom link تلقائي"],t:"بيستخدم Calendly webhooks.",lvl:"سهل"},en:{short:"Calendly booking events",w:"Fires when someone books or cancels.",u:"For consultants.",e:["Add booking to CRM","Custom confirmation","Auto Zoom link"],t:"Uses Calendly webhooks.",lvl:"Easy"}},
+  {id:"bamboohr",name:"BambooHR Trigger",cat:"HR",icon:"🎋",type:"Webhook",ar:{short:"أحداث BambooHR",w:"بيستقبل events زي employees جدد.",u:"للشركات اللي بتستخدم BambooHR.",e:["workflow عند employee جديد","time-off approval","تحديث أنظمة"],t:"بيستخدم BambooHR webhooks.",lvl:"متوسط"},en:{short:"BambooHR HR events",w:"Receives events like new employees.",u:"For companies using BambooHR.",e:["Workflow on new employee","Time-off approval","Update systems"],t:"Uses BambooHR webhooks.",lvl:"Medium"}},
+  {id:"quickbooks",name:"QuickBooks Trigger",cat:"Finance",icon:"💹",type:"Webhook",ar:{short:"أحداث QuickBooks",w:"بيستقبل events من QuickBooks زي invoices وpayments.",u:"للشركات اللي بتستخدم QuickBooks.",e:["workflow عند invoice","إشعار payment","تزامن مع CRM"],t:"بيستخدم QuickBooks webhooks.",lvl:"متوسط"},en:{short:"QuickBooks events",w:"Receives events like invoices and payments.",u:"For companies using QuickBooks.",e:["Workflow on invoice","Notify on payment","Sync with CRM"],t:"Uses QuickBooks webhooks.",lvl:"Medium"}},
+  {id:"xero",name:"Xero Trigger",cat:"Finance",icon:"💙",type:"Webhook",ar:{short:"أحداث Xero",w:"بيستقبل events من Xero زي invoices وpayments.",u:"للشركات اللي بتستخدم Xero.",e:["workflow عند invoice paid","overdue إشعار","تزامن مع CRM"],t:"بيستخدم Xero webhooks.",lvl:"متوسط"},en:{short:"Xero accounting events",w:"Receives events like invoices and payments.",u:"For companies using Xero.",e:["Workflow on invoice paid","Overdue notification","Sync with CRM"],t:"Uses Xero webhooks.",lvl:"Medium"}},
+];
+
+const CATS=[...new Set(T.map(t=>t.cat))];
+
+function genQuiz(lang){
+  const Lx=I[lang];
+  return [...T].sort(()=>Math.random()-.5).slice(0,15).map(t=>{
+    const d=t[lang],qt=Math.floor(Math.random()*4),tl=Lx.LN[d.lvl]||d.lvl;
+    let q,cor,gw;
+    if(qt===0){q=(lang==="ar"?"ما هو الـ trigger لـ: ":"Which trigger for: ")+d.short+"?";cor=t.name;gw=T.filter(x=>x.id!==t.id).map(x=>x.name);}
+    else if(qt===1){q=t.name+(lang==="ar"?" — نوعه؟":" — type?");cor=Lx.TN[t.type];gw=Object.values(Lx.TN).filter(v=>v!==Lx.TN[t.type]);}
+    else if(qt===2){q=t.name+(lang==="ar"?" — صعوبته؟":" — difficulty?");cor=tl;gw=["Easy","Medium","Advanced"].map(x=>Lx.LN[x]||x).filter(v=>v!==tl);}
+    else{q=(lang==="ar"?"أي trigger لـ: ":"Which trigger for: ")+d.e[0]+"?";cor=t.name;gw=T.filter(x=>x.id!==t.id).map(x=>x.name);}
+    return{q,correct:cor,opts:[cor,...gw.sort(()=>Math.random()-.5).slice(0,3)].sort(()=>Math.random()-.5),trigger:t};
+  });
+}
+
+function Detail({t,lang,onBack}){
+  const Lx=I[lang],d=t[lang],bdr=lang==="ar"?"borderRight":"borderLeft";
+  return(
+    <div style={{padding:"0 12px 20px"}}>
+      <button onClick={onBack} style={{background:"#1A1A2E",border:"1px solid #3A3A5A",borderRadius:8,padding:"6px 12px",color:"#E0E0F0",fontSize:11,cursor:"pointer",margin:"10px 0 12px",fontFamily:"inherit"}}>{Lx.back}</button>
+      <div style={{background:`linear-gradient(135deg,${cc(t)}22,${cc(t)}08)`,border:`1px solid ${cc(t)}55`,borderRadius:13,padding:14,marginBottom:11,display:"flex",alignItems:"center",gap:11}}>
+        <div style={{fontSize:26,width:48,height:48,background:`${cc(t)}33`,borderRadius:12,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>{t.icon}</div>
+        <div><div style={{fontWeight:800,fontSize:15,marginBottom:2}}>{t.name}</div><div style={{fontSize:10,color:"#8888AA",marginBottom:5}}>{d.short}</div>
+          <span style={{background:`${cc(t)}22`,color:cc(t),fontSize:9,padding:"1px 7px",borderRadius:7,marginRight:4}}>{Lx.CN[t.cat]||t.cat}</span>
+          <span style={{background:`${TC[t.type]}22`,color:TC[t.type],fontSize:9,padding:"1px 7px",borderRadius:7,marginRight:4}}>{Lx.TN[t.type]}</span>
+          <span style={{background:`${dc(d.lvl)}22`,color:dc(d.lvl),fontSize:9,padding:"1px 7px",borderRadius:7}}>{Lx.LN[d.lvl]||d.lvl}</span>
+        </div>
+      </div>
+      <div style={{background:"#1A1A2E",border:"1px solid #252535",[bdr]:`3px solid ${cc(t)}`,borderRadius:11,padding:12,marginBottom:9}}>
+        <div style={{fontSize:9,color:"#555588",fontWeight:700,marginBottom:5}}>{Lx.what}</div>
+        <div style={{fontSize:12,lineHeight:1.85,color:"#D8D8F0"}}>{d.w}</div>
+      </div>
+      <div style={{background:"#1A1A2E",border:"1px solid #252535",[bdr]:"3px solid #4ECDC4",borderRadius:11,padding:12,marginBottom:9}}>
+        <div style={{fontSize:9,color:"#555588",fontWeight:700,marginBottom:5}}>{Lx.when}</div>
+        <div style={{fontSize:12,lineHeight:1.85,color:"#D8D8F0"}}>{d.u}</div>
+      </div>
+      <div style={{background:"#1A1A2E",border:"1px solid #252535",borderRadius:11,padding:12,marginBottom:9}}>
+        <div style={{fontSize:9,color:"#555588",fontWeight:700,marginBottom:9}}>{Lx.examples}</div>
+        {d.e.map((ex,i)=>(
+          <div key={i} style={{display:"flex",gap:8,alignItems:"flex-start",marginBottom:7}}>
+            <span style={{background:`${cc(t)}33`,color:cc(t),borderRadius:"50%",width:18,height:18,display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,fontWeight:700,flexShrink:0,marginTop:2}}>{i+1}</span>
+            <span style={{fontSize:12,lineHeight:1.7,color:"#D8D8F0"}}>{ex}</span>
+          </div>
+        ))}
+      </div>
+      <div style={{background:"#141408",border:"1px solid #F39C1233",borderRadius:11,padding:12,display:"flex",gap:8}}>
+        <span style={{fontSize:15,flexShrink:0}}>💡</span>
+        <div><div style={{fontSize:9,color:"#F39C12",fontWeight:700,marginBottom:4}}>{Lx.tip}</div><div style={{fontSize:12,lineHeight:1.85,color:"#F5CBA7"}}>{d.t}</div></div>
+      </div>
+    </div>
+  );
+}
+
+function App(){
+  const [lang,setLang]=useState("ar");
+  const [tab,setTab]=useState("explore");
+  const [sub,setSub]=useState("all");
+  const [sel,setSel]=useState(null);
+  const [cmp,setCmp]=useState([]);
+  const [showCmp,setShowCmp]=useState(false);
+  const [catF,setCatF]=useState("all");
+  const [lvlF,setLvlF]=useState("all");
+  const [typF,setTypF]=useState("all");
+  const [srch,setSrch]=useState("");
+  const [favs,setFavs]=useState([]);
+  const [quiz,setQuiz]=useState(null);
+  const [qi,setQi]=useState(0);
+  const [qch,setQch]=useState(null);
+  const [qsc,setQsc]=useState(0);
+  const [qdone,setQdone]=useState(false);
+  const [qans,setQans]=useState([]);
+  const [showShare,setShowShare]=useState(false);
+  const [fq,setFq]=useState("");
+  const [fres,setFres]=useState(null);
+  const [fload,setFload]=useState(false);
+  const [fsel,setFsel]=useState(null);
+  const [pathProg,setPathProg]=useState({});
+  const [openS,setOpenS]=useState({});
+  const [challengePassed,setChallengePassed]=useState({});
+  const [activeChallenge,setActiveChallenge]=useState(null);
+  const [cqIdx,setCqIdx]=useState(0);
+  const [cqChosen,setCqChosen]=useState(null);
+  const [cqScore,setCqScore]=useState(0);
+  const [cqDone,setCqDone]=useState(false);
+
+  const Lx=I[lang];
+  const swLang=l=>{setLang(l);setSel(null);setFsel(null);setCatF("all");setLvlF("all");setTypF("all");setSrch("");};
+  const list=(sub==="favs"?T.filter(t=>favs.includes(t.id)):T).filter(t=>{
+    const d=t[lang],lm={سهل:"Easy",متوسط:"Medium",متقدم:"Advanced",Easy:"Easy",Medium:"Medium",Advanced:"Advanced"};
+    return (catF==="all"||t.cat===catF)&&(lvlF==="all"||(lm[d.lvl]||d.lvl)===lvlF)&&(typF==="all"||t.type===typF)&&(t.name.toLowerCase().includes(srch.toLowerCase())||d.short.toLowerCase().includes(srch.toLowerCase()));
+  });
+
+  const startQ=()=>{setQuiz(genQuiz(lang));setQi(0);setQsc(0);setQdone(false);setQch(null);setQans([]);setShowShare(false);};
+  const pick=opt=>{if(qch)return;setQch(opt);const ok=opt===quiz[qi].correct;if(ok)setQsc(s=>s+1);setQans(a=>[...a,{q:quiz[qi].q,chosen:opt,correct:quiz[qi].correct,right:ok}]);setTimeout(()=>{if(qi+1>=quiz.length){setQdone(true);}else{setQi(i=>i+1);setQch(null);}},1200);};
+  const doFind=q=>{if(!q.trim())return;setFload(true);setFres(null);setTimeout(()=>{setFres(findT(q,T));setFload(false);},500);};
+
+  const S={minHeight:"100vh",background:"#0D0D1A",fontFamily:"'Cairo','Segoe UI',sans-serif",direction:Lx.dir,color:"#E0E0F0"};
+  const LB=(<div style={{display:"flex",gap:6,padding:"6px 12px",background:"#0A0A14",borderBottom:"1px solid #1A1A2E",justifyContent:lang==="ar"?"flex-start":"flex-end"}}>{["ar","en"].map(l=>(<button key={l} onClick={()=>swLang(l)} style={{background:lang===l?"#FF6B35":"transparent",border:`1px solid ${lang===l?"#FF6B35":"#3A3A5A"}`,borderRadius:14,padding:"3px 11px",color:lang===l?"#fff":"#666688",fontSize:11,fontWeight:lang===l?700:400,cursor:"pointer",fontFamily:"inherit"}}>{l==="ar"?"🇸🇦 عربي":"🇬🇧 English"}</button>))}</div>);
+  const HD=(<div style={{background:"linear-gradient(135deg,#1A1A2E,#16213E,#0F3460)",padding:"12px 12px 9px",textAlign:"center",borderBottom:"1px solid #2A2A4A"}}><h1 style={{margin:0,fontSize:17,fontWeight:800,background:"linear-gradient(90deg,#FF6B35,#FFD700,#4ECDC4)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>⚡ n8n Triggers Explorer</h1><p style={{margin:"2px 0 0",color:"#7777AA",fontSize:10}}>{T.length} triggers ⚡ Ahmed ELGhamrawy</p></div>);
+  const TB=(<div style={{display:"flex",borderBottom:"1px solid #2A2A4A",overflowX:"auto"}}>{[["explore",Lx.explore],["finder",Lx.finder],["path",Lx.path],["quiz",Lx.quiz]].map(([v,l])=>(<button key={v} onClick={()=>setTab(v)} style={{flex:1,minWidth:65,padding:"9px 4px",background:tab===v?"#1A1A2E":"transparent",border:"none",borderBottom:tab===v?"2px solid #FF6B35":"2px solid transparent",color:tab===v?"#FF6B35":"#555577",fontSize:11,cursor:"pointer",fontFamily:"inherit",fontWeight:tab===v?700:400,whiteSpace:"nowrap"}}>{l}</button>))}</div>);
+
+  if(tab==="finder") return(<div style={S}>{LB}{HD}{TB}{fsel?<Detail t={fsel} lang={lang} onBack={()=>setFsel(null)}/>:(<div style={{padding:"13px 12px 24px"}}><div style={{textAlign:"center",marginBottom:13}}><div style={{fontSize:30,marginBottom:4}}>🔍</div><div style={{fontSize:14,fontWeight:800,marginBottom:3}}>Trigger Finder</div><div style={{fontSize:11,color:"#7777AA"}}>{Lx.finderSub}</div></div><div style={{display:"flex",gap:8,marginBottom:12}}><input value={fq} onChange={e=>setFq(e.target.value)} onKeyDown={e=>e.key==="Enter"&&doFind(fq)} placeholder={Lx.finderPH} style={{flex:1,background:"#1A1A2E",border:"1px solid #3A3A5A",borderRadius:11,padding:"10px 13px",color:"#E0E0F0",fontSize:12,outline:"none",textAlign:lang==="ar"?"right":"left"}}/><button onClick={()=>doFind(fq)} style={{background:"linear-gradient(135deg,#FF6B35,#FFD700)",border:"none",borderRadius:11,padding:"10px 14px",color:"#000",fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:"inherit",flexShrink:0}}>{Lx.finderBtn}</button></div>{fload&&<div style={{textAlign:"center",padding:16,color:"#7777AA"}}>⏳</div>}{fres&&!fload&&(<div><div style={{fontSize:11,color:"#FF6B35",fontWeight:700,marginBottom:8}}>{Lx.finderBest}</div><div onClick={()=>setFsel(fres.best)} style={{background:`linear-gradient(135deg,${cc(fres.best)}22,${cc(fres.best)}08)`,border:`2px solid ${cc(fres.best)}66`,borderRadius:13,padding:14,marginBottom:12,cursor:"pointer",display:"flex",alignItems:"center",gap:11}}><div style={{fontSize:26,width:50,height:50,background:`${cc(fres.best)}33`,borderRadius:12,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>{fres.best.icon}</div><div><div style={{fontWeight:800,fontSize:14,marginBottom:2}}>{fres.best.name}</div><div style={{fontSize:11,color:"#AAAACC",marginBottom:3}}>{fres.best[lang].short}</div><div style={{fontSize:10,color:"#FF6B35"}}>{lang==="ar"?"← اضغط للشرح":"← tap for details"}</div></div></div>{fres.alts.length>0&&(<div><div style={{fontSize:11,color:"#7777AA",fontWeight:700,marginBottom:7}}>{Lx.finderAlt}</div>{fres.alts.map(t=>(<div key={t.id} onClick={()=>setFsel(t)} style={{background:"#1A1A2E",border:`1px solid ${cc(t)}33`,borderRadius:10,padding:"10px 12px",cursor:"pointer",display:"flex",alignItems:"center",gap:9,marginBottom:6}}><div style={{fontSize:17,width:30,height:30,background:`${cc(t)}22`,borderRadius:7,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>{t.icon}</div><div style={{flex:1}}><div style={{fontSize:12,fontWeight:600}}>{t.name}</div><div style={{fontSize:10,color:"#666688"}}>{t[lang].short}</div></div><div style={{fontSize:11,color:"#444466"}}>←</div></div>))}</div>)}</div>)}{!fres&&fq&&!fload&&<div style={{textAlign:"center",padding:12,color:"#555577",fontSize:12}}>{Lx.finderNo}</div>}{!fres&&!fload&&(<div style={{marginTop:4}}><div style={{fontSize:11,color:"#555577",marginBottom:9}}>{Lx.finderEx}</div>{(lang==="ar"?["عايز أبعت إيميل لما حد يملا فورم","عايز أتابع أوردرات Shopify","عايز أشغّل workflow كل يوم","عايز أستقبل رسائل تيليجرام"]:["Send email when form is submitted","Track Shopify orders","Run workflow every morning","Receive Telegram messages"]).map((ex,i)=>(<div key={i} onClick={()=>{setFq(ex);doFind(ex);}} style={{background:"#1A1A2E",border:"1px solid #252535",borderRadius:9,padding:"9px 12px",marginBottom:6,fontSize:12,color:"#AAAACC",cursor:"pointer",display:"flex",alignItems:"center",gap:8}}><span style={{color:"#FF6B35",flexShrink:0}}>→</span>{ex}</div>))}</div>)}</div>)}</div>);
+
+  const startChallenge=(stageId)=>{setActiveChallenge(stageId);setCqIdx(0);setCqChosen(null);setCqScore(0);setCqDone(false);};
+  const pickCQ=(optIdx,stageId)=>{
+    if(cqChosen!==null)return;
+    setCqChosen(optIdx);
+    const ch=CHALLENGES[stageId];
+    const q=ch.qs[cqIdx];
+    const qd=q[lang];
+    const ok=optIdx===qd.ans;
+    const ns=ok?cqScore+1:cqScore;
+    setTimeout(()=>{
+      if(cqIdx+1>=ch.qs.length){
+        setCqScore(ns);setCqDone(true);
+        if(ns===ch.qs.length){setChallengePassed(p=>({...p,[stageId]:true}));}
+      } else {setCqIdx(i=>i+1);setCqChosen(null);}
+    },1000);
+    if(ok)setCqScore(s=>s+1);
+  };
+
+  if(tab==="path"){
+    const tot=STAGES.reduce((a,s)=>a+s.ids.length,0);
+    const don=STAGES.reduce((a,s)=>a+(pathProg[s.id]||[]).length,0);
+    const ch=activeChallenge?CHALLENGES[activeChallenge]:null;
+    const chLang=ch?ch[lang]:null;
+    return(
+    <div style={S}>
+      {LB}{HD}{TB}
+      {/* Challenge Modal */}
+      {activeChallenge&&(
+        <div onClick={()=>!cqDone&&setActiveChallenge(null)} style={{position:"fixed",inset:0,background:"#000C",display:"flex",alignItems:"center",justifyContent:"center",zIndex:999,padding:16}}>
+          <div onClick={e=>e.stopPropagation()} style={{background:"linear-gradient(135deg,#1A1A2E,#16213E)",border:`2px solid ${STAGES.find(s=>s.id===activeChallenge).color}55`,borderRadius:20,padding:20,maxWidth:340,width:"100%",boxShadow:"0 20px 60px #000A"}}>
+            {!cqDone?(()=>{
+              const stage=STAGES.find(s=>s.id===activeChallenge);
+              const q=ch.qs[cqIdx][lang];
+              return(
+                <div>
+                  <div style={{textAlign:"center",marginBottom:14}}>
+                    <div style={{fontSize:11,color:stage.color,fontWeight:700,marginBottom:2}}>{chLang.title}</div>
+                    <div style={{fontSize:10,color:"#7777AA"}}>{chLang.sub}</div>
+                  </div>
+                  {/* progress */}
+                  <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:14}}>
+                    <div style={{flex:1,background:"#0D0D1A",borderRadius:20,height:5,overflow:"hidden"}}>
+                      <div style={{width:`${((cqIdx)/ch.qs.length)*100}%`,height:"100%",background:`linear-gradient(90deg,${stage.color},#FFD700)`,borderRadius:20}}/>
+                    </div>
+                    <span style={{fontSize:10,color:"#7777AA"}}>{cqIdx+1}/{ch.qs.length}</span>
+                  </div>
+                  {/* question */}
+                  <div style={{background:"#0D0D1A",border:`1px solid ${stage.color}33`,borderRadius:12,padding:14,marginBottom:12,fontSize:13,lineHeight:1.85,fontWeight:600,color:"#E0E0F0"}}>{q.q}</div>
+                  {/* options */}
+                  {q.opts.map((opt,i)=>{
+                    const chosen=cqChosen===i;
+                    const isCorrect=i===q.ans;
+                    let bg="#1A1A2E",br="#2A2A4A",col="#E0E0F0";
+                    if(cqChosen!==null){
+                      if(isCorrect){bg="#0A2A0A";br="#2ECC71";col="#2ECC71";}
+                      else if(chosen){bg="#2A0A0A";br="#E74C3C";col="#E74C3C";}
+                    }
+                    return(
+                      <button key={i} onClick={()=>pickCQ(i,activeChallenge)} style={{width:"100%",background:bg,border:`1px solid ${br}`,borderRadius:10,padding:"11px 13px",color:col,fontSize:12,cursor:cqChosen!==null?"default":"pointer",textAlign:lang==="ar"?"right":"left",display:"flex",alignItems:"center",gap:9,marginBottom:7,fontFamily:"inherit",transition:"all .2s"}}>
+                        <span style={{width:22,height:22,borderRadius:"50%",background:cqChosen!==null&&isCorrect?"#2ECC7133":cqChosen!==null&&chosen?"#E74C3C33":"#ffffff11",display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,flexShrink:0,fontWeight:700}}>
+                          {cqChosen!==null?(isCorrect?"✓":chosen?"✗":(lang==="ar"?["أ","ب","ج","د"][i]:["A","B","C","D"][i])):(lang==="ar"?["أ","ب","ج","د"][i]:["A","B","C","D"][i])}
+                        </span>
+                        {opt}
+                      </button>
+                    );
+                  })}
+                  <button onClick={()=>setActiveChallenge(null)} style={{width:"100%",background:"transparent",border:"1px solid #2A2A4A",borderRadius:9,padding:"8px",color:"#555577",fontSize:11,cursor:"pointer",marginTop:4,fontFamily:"inherit"}}>{lang==="ar"?"إلغاء":"Cancel"}</button>
+                </div>
+              );
+            })():(()=>{
+              const stage=STAGES.find(s=>s.id===activeChallenge);
+              const passed=cqScore===ch.qs.length;
+              return(
+                <div style={{textAlign:"center",padding:"8px 0"}}>
+                  <div style={{fontSize:52,marginBottom:8}}>{passed?"🏆":"😅"}</div>
+                  <div style={{fontSize:16,fontWeight:800,marginBottom:4,color:passed?"#2ECC71":"#E74C3C"}}>{passed?(lang==="ar"?"ممتاز! عدّيت التحدي!":"Excellent! Challenge passed!"):(lang==="ar"?"حاول تاني!":"Try again!")}</div>
+                  <div style={{fontSize:13,color:"#7777AA",marginBottom:6}}>{cqScore}/{ch.qs.length} {lang==="ar"?"إجابات صح":"correct"}</div>
+                  {passed&&(
+                    <div style={{background:"#0A2A0A",border:"1px solid #2ECC7144",borderRadius:12,padding:10,marginBottom:12,fontSize:11,color:"#2ECC71"}}>
+                      {lang==="ar"?"🔓 المرحلة الجاية اتفتحت!":"🔓 Next stage unlocked!"}
+                    </div>
+                  )}
+                  <div style={{display:"flex",gap:8,justifyContent:"center"}}>
+                    {!passed&&<button onClick={()=>startChallenge(activeChallenge)} style={{background:`linear-gradient(135deg,${stage.color},#FFD700)`,border:"none",borderRadius:10,padding:"10px 18px",color:"#000",fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>{lang==="ar"?"🔄 حاول تاني":"🔄 Retry"}</button>}
+                    <button onClick={()=>setActiveChallenge(null)} style={{background:"#1A1A2E",border:`1px solid ${stage.color}`,borderRadius:10,padding:"10px 18px",color:stage.color,fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>{lang==="ar"?"تمام ✓":"Done ✓"}</button>
+                  </div>
+                </div>
+              );
+            })()}
+          </div>
+        </div>
+      )}
+      <div style={{padding:"12px 12px 24px"}}>
+        <div style={{textAlign:"center",marginBottom:11}}>
+          <div style={{fontSize:12,fontWeight:700,marginBottom:2}}>{lang==="ar"?"🗺️ مسار التعلم":"🗺️ Learning Path"}</div>
+          <div style={{fontSize:10,color:"#7777AA"}}>{Lx.pathSub}</div>
+        </div>
+        {/* overall progress */}
+        <div style={{background:"#1A1A2E",borderRadius:11,padding:11,marginBottom:11}}>
+          <div style={{display:"flex",justifyContent:"space-between",marginBottom:5}}>
+            <span style={{fontSize:10,color:"#8888AA"}}>{Lx.pathProg}</span>
+            <span style={{fontSize:10,color:"#FF6B35",fontWeight:700}}>{don}/{tot}</span>
+          </div>
+          <div style={{background:"#0D0D1A",borderRadius:20,height:6,overflow:"hidden"}}>
+            <div style={{width:`${don/tot*100}%`,height:"100%",background:"linear-gradient(90deg,#FF6B35,#FFD700)",borderRadius:20}}/>
+          </div>
+        </div>
+        {STAGES.map((stage,i)=>{
+          const sd=pathProg[stage.id]||[];
+          const allTriggersOk=stage.ids.every(id=>sd.includes(id));
+          const prevPassed=i===0||challengePassed[STAGES[i-1].id];
+          const unlk=i===0||prevPassed;
+          const isO=openS[stage.id];
+          const chPassed=challengePassed[stage.id];
+          const showChallengeBtn=allTriggersOk&&!chPassed;
+          return(
+            <div key={stage.id} style={{marginBottom:11}}>
+              {/* stage header */}
+              <div onClick={()=>unlk&&setOpenS(o=>({...o,[stage.id]:!o[stage.id]}))} style={{background:chPassed?"#0A2A0A":allTriggersOk&&unlk?"#161625":"#1A1A2E",border:`1px solid ${chPassed?stage.color+"88":allTriggersOk&&unlk?stage.color+"55":unlk?stage.color+"33":"#1A1A2E"}`,borderRadius:11,padding:"12px 13px",cursor:unlk?"pointer":"default",opacity:unlk?1:.45}}>
+                <div style={{display:"flex",alignItems:"center",gap:9}}>
+                  <div style={{width:36,height:36,borderRadius:"50%",background:`${stage.color}22`,border:`2px solid ${stage.color}55`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,flexShrink:0}}>
+                    {chPassed?"🏆":allTriggersOk&&unlk?"⚡":unlk?(i+1):"🔒"}
+                  </div>
+                  <div style={{flex:1}}>
+                    <div style={{fontWeight:700,fontSize:12,color:chPassed?"#FFD700":allTriggersOk&&unlk?stage.color:unlk?stage.color+"AA":"#555577"}}>
+                      {lang==="ar"?stage.ar:stage.en}
+                    </div>
+                    {chPassed&&<div style={{fontSize:9,color:"#FFD700",marginTop:1}}>✅ {lang==="ar"?"التحدي عدى!":"Challenge passed!"}</div>}
+                    {allTriggersOk&&!chPassed&&unlk&&<div style={{fontSize:9,color:stage.color,marginTop:1}}>{lang==="ar"?"🔥 جاهز للتحدي!":"🔥 Ready for challenge!"}</div>}
+                  </div>
+                  <div style={{fontSize:10,color:"#555577"}}>{sd.length}/{stage.ids.length}</div>
+                  {unlk&&<div style={{fontSize:11,color:"#555577"}}>{isO?"▲":"▼"}</div>}
+                </div>
+              </div>
+              {/* challenge button — shown when all triggers done but challenge not passed */}
+              {showChallengeBtn&&unlk&&(
+                <div style={{margin:"6px 0 2px",padding:"0 2px"}}>
+                  <button onClick={()=>startChallenge(stage.id)} style={{width:"100%",background:`linear-gradient(135deg,${stage.color}33,${stage.color}11)`,border:`2px solid ${stage.color}88`,borderRadius:10,padding:"11px",color:stage.color,fontSize:12,fontWeight:800,cursor:"pointer",fontFamily:"inherit",display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
+                    <span style={{fontSize:16}}>🔥</span>
+                    {lang==="ar"?"ابدأ التحدي عشان تفتح المرحلة الجاية!":"Start Challenge to unlock next stage!"}
+                    <span style={{fontSize:16}}>🔥</span>
+                  </button>
+                </div>
+              )}
+              {/* triggers list */}
+              {isO&&unlk&&(
+                <div style={{background:"#12121F",border:`1px solid ${stage.color}22`,borderRadius:"0 0 11px 11px",padding:8,marginTop:-3}}>
+                  {stage.ids.map(tid=>{
+                    const t=T.find(x=>x.id===tid);
+                    if(!t)return null;
+                    const id2=sd.includes(tid);
+                    return(
+                      <div key={tid} style={{display:"flex",alignItems:"center",gap:9,padding:"9px 10px",borderRadius:8,marginBottom:4,background:id2?"#0A2A0A":"#1A1A2E",border:`1px solid ${id2?stage.color+"44":"#252535"}`}}>
+                        <div style={{fontSize:17,width:30,height:30,background:`${cc(t)}22`,borderRadius:7,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>{t.icon}</div>
+                        <div style={{flex:1,cursor:"pointer"}} onClick={()=>{setTab("explore");setSel(t);}}>
+                          <div style={{fontSize:11,fontWeight:600}}>{t.name}</div>
+                          <div style={{fontSize:9,color:"#666688"}}>{t[lang].short}</div>
+                        </div>
+                        <button onClick={()=>setPathProg(p=>({...p,[stage.id]:id2?(p[stage.id]||[]).filter(x=>x!==tid):[...(p[stage.id]||[]),tid]}))} style={{background:id2?`${stage.color}22`:"transparent",border:`1px solid ${id2?stage.color:"#3A3A5A"}`,borderRadius:7,padding:"3px 9px",color:id2?stage.color:"#666688",fontSize:10,cursor:"pointer",fontFamily:"inherit",flexShrink:0}}>
+                          {id2?"✅":"✓"}
+                        </button>
+                      </div>
+                    );
+                  })}
+                  {!allTriggersOk&&(
+                    <div style={{textAlign:"center",padding:"8px 0 4px",fontSize:10,color:"#555577"}}>
+                      {lang==="ar"?`اتعلم كل الـ triggers الأول عشان تقدر تبدأ التحدي 🔥`:`Learn all triggers first to unlock the challenge 🔥`}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );}
+
+  if(tab==="quiz") return(<div style={S}>{LB}{HD}{TB}<div style={{padding:"13px"}}>{!quiz&&!qdone&&(<div style={{textAlign:"center",padding:"24px 16px"}}><div style={{fontSize:48,marginBottom:8}}>🧠</div><div style={{fontSize:16,fontWeight:800,marginBottom:3}}>{Lx.quizTitle}</div><div style={{fontSize:12,color:"#7777AA",marginBottom:15}}>{Lx.quizSub}</div><button onClick={startQ} style={{background:"linear-gradient(135deg,#FF6B35,#FFD700)",border:"none",borderRadius:12,padding:"12px 28px",color:"#000",fontSize:14,fontWeight:800,cursor:"pointer",fontFamily:"inherit"}}>{Lx.startQuiz}</button></div>)}{quiz&&!qdone&&(()=>{const q2=quiz[qi];return(<div><div style={{display:"flex",alignItems:"center",gap:8,marginBottom:10}}><div style={{flex:1,background:"#1A1A2E",borderRadius:20,height:5,overflow:"hidden"}}><div style={{width:`${((qi+1)/quiz.length)*100}%`,height:"100%",background:"linear-gradient(90deg,#FF6B35,#FFD700)",borderRadius:20}}/></div><span style={{fontSize:10,color:"#7777AA"}}>{qi+1}/{quiz.length}</span><span style={{fontSize:10,color:"#FFD700"}}>⭐{qsc}</span></div><div style={{background:`${cc(q2.trigger)}11`,border:`1px solid ${cc(q2.trigger)}33`,borderRadius:9,padding:"7px 11px",marginBottom:10,display:"flex",alignItems:"center",gap:7}}><span style={{fontSize:17}}>{q2.trigger.icon}</span><span style={{fontSize:10,color:"#8888AA"}}>{Lx.CN[q2.trigger.cat]||q2.trigger.cat}</span></div><div style={{background:"#1A1A2E",border:"1px solid #2A2A4A",borderRadius:11,padding:12,marginBottom:11,fontSize:13,lineHeight:1.8,fontWeight:600}}>{q2.q}</div>{q2.opts.map((opt,i)=>{const ic=qch===opt,isC=opt===q2.correct;let bg="#1A1A2E",br="#2A2A4A",col="#E0E0F0";if(qch){if(isC){bg="#0A2A0A";br="#2ECC71";col="#2ECC71";}else if(ic){bg="#2A0A0A";br="#E74C3C";col="#E74C3C";}}return(<button key={i} onClick={()=>pick(opt)} style={{width:"100%",background:bg,border:`1px solid ${br}`,borderRadius:10,padding:"10px 12px",color:col,fontSize:12,cursor:qch?"default":"pointer",textAlign:lang==="ar"?"right":"left",display:"flex",alignItems:"center",gap:8,marginBottom:6,fontFamily:"inherit"}}><span style={{width:19,height:19,borderRadius:"50%",background:qch&&isC?"#2ECC7133":qch&&ic&&!isC?"#E74C3C33":"#ffffff11",display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,flexShrink:0}}>{qch?(isC?"✓":ic?"✗":Lx.opts[i]):Lx.opts[i]}</span>{opt}</button>);})}</div>)})()}{qdone&&(()=>{const pct=Math.round(qsc/quiz.length*100),emoji=qsc>=12?"🏆":qsc>=8?"🎯":qsc>=5?"📚":"💪",msg=qsc>=12?Lx.s12:qsc>=8?Lx.s8:qsc>=5?Lx.s5:Lx.s0;return(<div><div style={{textAlign:"center",padding:"12px 0 10px"}}><div style={{fontSize:44,marginBottom:6}}>{emoji}</div><div style={{fontSize:17,fontWeight:800,marginBottom:2}}>{msg}</div><div style={{fontSize:36,fontWeight:900,background:"linear-gradient(90deg,#FF6B35,#FFD700)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>{qsc}/{quiz.length}</div><div style={{fontSize:11,color:"#7777AA",marginBottom:12}}>{pct}%</div><div style={{display:"flex",gap:8,justifyContent:"center",flexWrap:"wrap"}}><button onClick={startQ} style={{background:"linear-gradient(135deg,#FF6B35,#FFD700)",border:"none",borderRadius:10,padding:"10px 16px",color:"#000",fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>{Lx.newQuiz}</button><button onClick={()=>setShowShare(true)} style={{background:"#1A1A2E",border:"1px solid #4ECDC4",borderRadius:10,padding:"10px 16px",color:"#4ECDC4",fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>{Lx.shareBtn}</button></div></div><div style={{fontSize:11,color:"#7777AA",marginBottom:7,fontWeight:700}}>{Lx.review}</div>{qans.map((a,i)=>(<div key={i} style={{background:a.right?"#0A2A0A":"#1A0808",border:`1px solid ${a.right?"#2ECC7133":"#E74C3C33"}`,borderRadius:9,padding:"8px 10px",marginBottom:5}}><div style={{display:"flex",alignItems:"center",gap:5,marginBottom:a.right?0:3}}><span style={{fontSize:11}}>{a.right?"✅":"❌"}</span><div style={{fontSize:10,color:"#8888AA",lineHeight:1.5}}>{a.q}</div></div>{!a.right&&<div style={{fontSize:10,color:"#2ECC71"}}>{Lx.correct} {a.correct}</div>}</div>))}{showShare&&(<div onClick={()=>setShowShare(false)} style={{position:"fixed",inset:0,background:"#000A",display:"flex",alignItems:"center",justifyContent:"center",zIndex:999,padding:16}}><div onClick={e=>e.stopPropagation()} style={{background:"linear-gradient(135deg,#1A1A2E,#16213E)",border:"1px solid #FF6B3555",borderRadius:18,padding:20,maxWidth:300,width:"100%"}}><div style={{textAlign:"center",marginBottom:13}}><div style={{fontSize:38,marginBottom:5}}>{emoji}</div><div style={{fontSize:16,fontWeight:800,marginBottom:2}}>{msg}</div><div style={{fontSize:32,fontWeight:900,background:"linear-gradient(90deg,#FF6B35,#FFD700)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>{qsc}/{quiz.length}</div><div style={{fontSize:11,color:"#7777AA",marginBottom:9}}>{pct}%</div></div><div style={{background:"#0D0D1A",borderRadius:8,padding:10,marginBottom:10,fontSize:11,color:"#AAAACC",lineHeight:1.7,direction:"ltr",textAlign:"left"}}>{emoji} {msg}<br/>n8n Triggers: {qsc}/{quiz.length} ({pct}%)<br/>#n8n #automation #nocode</div><div style={{display:"flex",gap:8}}><button onClick={()=>{const txt=`${emoji} ${msg}\nn8n Triggers: ${qsc}/${quiz.length} (${pct}%)\n#n8n #automation #nocode`;navigator.clipboard&&navigator.clipboard.writeText(txt).then(()=>alert(lang==="ar"?"✅ تم النسخ!":"✅ Copied!"));}} style={{flex:1,background:"linear-gradient(135deg,#FF6B35,#FFD700)",border:"none",borderRadius:9,padding:10,color:"#000",fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>{Lx.copyBtn}</button><button onClick={()=>setShowShare(false)} style={{background:"#1A1A2E",border:"1px solid #3A3A5A",borderRadius:9,padding:"10px 13px",color:"#888",fontSize:12,cursor:"pointer",fontFamily:"inherit"}}>✕</button></div></div></div>)}</div>)})()}</div></div>);
+
+  return(<div style={S}>{LB}{HD}{TB}{!sel&&(<div style={{display:"flex",borderBottom:"1px solid #1A1A2E"}}>{[["all",Lx.all],["favs",Lx.favs+(favs.length>0?` (${favs.length})`:"")]].map(([v,l])=>(<button key={v} onClick={()=>setSub(v)} style={{flex:1,padding:"8px 0",background:"transparent",border:"none",borderBottom:sub===v?"2px solid #4ECDC4":"2px solid transparent",color:sub===v?"#4ECDC4":"#444466",fontSize:11,cursor:"pointer",fontFamily:"inherit"}}>{l}</button>))}</div>)}{cmp.length>0&&!sel&&(<div style={{background:"#1A1A2E",borderBottom:"1px solid #2A2A4A",padding:"5px 11px",display:"flex",alignItems:"center",gap:7}}><span style={{fontSize:10,color:"#7777AA",flexShrink:0}}>{Lx.cmpLabel}</span><div style={{display:"flex",gap:5,flex:1,flexWrap:"wrap"}}>{cmp.map(t=>(<span key={t.id} style={{background:`${cc(t)}22`,color:cc(t),fontSize:10,padding:"2px 8px",borderRadius:8,display:"inline-flex",alignItems:"center",gap:4}}>{t.icon} {t.name}<span onClick={()=>setCmp(c=>c.filter(x=>x.id!==t.id))} style={{cursor:"pointer",opacity:.6}}>✕</span></span>))}</div>{cmp.length===2&&<button onClick={()=>setShowCmp(true)} style={{background:"#4ECDC4",border:"none",borderRadius:7,padding:"4px 10px",color:"#000",fontSize:10,fontWeight:700,cursor:"pointer",fontFamily:"inherit",flexShrink:0}}>{Lx.compare}</button>}</div>)}{showCmp&&cmp.length===2&&(()=>{const [a,b]=cmp,rows=[[Lx.cat,Lx.CN[a.cat]||a.cat,Lx.CN[b.cat]||b.cat],[Lx.type,Lx.TN[a.type],Lx.TN[b.type]],[Lx.diff,Lx.LN[a[lang].lvl]||a[lang].lvl,Lx.LN[b[lang].lvl]||b[lang].lvl],[Lx.what,a[lang].w,b[lang].w],[Lx.when,a[lang].u,b[lang].u],[Lx.tip,a[lang].t,b[lang].t]];return(<div style={{padding:"0 12px 20px"}}><button onClick={()=>setShowCmp(false)} style={{background:"#1A1A2E",border:"1px solid #3A3A5A",borderRadius:8,padding:"6px 12px",color:"#E0E0F0",fontSize:11,cursor:"pointer",margin:"10px 0 12px",fontFamily:"inherit"}}>{Lx.back}</button><div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:9,marginBottom:11}}>{[a,b].map(t=>(<div key={t.id} style={{background:`${cc(t)}22`,border:`1px solid ${cc(t)}44`,borderRadius:11,padding:"11px 10px",textAlign:"center"}}><div style={{fontSize:22,marginBottom:4}}>{t.icon}</div><div style={{fontSize:11,fontWeight:700,lineHeight:1.4}}>{t.name}</div></div>))}</div>{rows.map(([label,va,vb],i)=>(<div key={i} style={{marginBottom:8}}><div style={{fontSize:9,color:"#555588",fontWeight:700,marginBottom:5}}>{label}</div><div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:7}}>{[{t:a,v:va},{t:b,v:vb}].map(({t,v})=>(<div key={t.id} style={{background:"#1A1A2E",border:`1px solid ${cc(t)}33`,borderRadius:8,padding:"8px 10px",fontSize:11,lineHeight:1.7,color:"#D8D8F0"}}>{v}</div>))}</div></div>))}</div>);})()}{sel&&!showCmp&&<Detail t={sel} lang={lang} onBack={()=>setSel(null)}/>}{!sel&&!showCmp&&(<><div style={{padding:"8px 11px 0"}}><input value={srch} onChange={e=>setSrch(e.target.value)} placeholder={Lx.search} style={{width:"100%",background:"#1A1A2E",border:"1px solid #3A3A5A",borderRadius:10,padding:"8px 11px",color:"#E0E0F0",fontSize:12,outline:"none",boxSizing:"border-box",marginBottom:7,textAlign:lang==="ar"?"right":"left"}}/><div style={{display:"flex",gap:4,flexWrap:"wrap",marginBottom:5}}><button onClick={()=>setCatF("all")} style={{borderRadius:13,padding:"3px 8px",fontSize:9,background:catF==="all"?"#FF6B35":"#1A1A2E",border:`1px solid ${catF==="all"?"#FF6B35":"#252535"}`,color:catF==="all"?"#fff":"#555577",cursor:"pointer",fontFamily:"inherit"}}>{Lx.all}</button>{CATS.map(c=>(<button key={c} onClick={()=>setCatF(c)} style={{borderRadius:13,padding:"3px 8px",fontSize:9,background:catF===c?(CC[c]||"#888"):"#1A1A2E",border:`1px solid ${catF===c?(CC[c]||"#888"):"#252535"}`,color:catF===c?"#fff":"#555577",cursor:"pointer",fontFamily:"inherit"}}>{Lx.CN[c]||c}</button>))}</div><div style={{display:"flex",gap:4,flexWrap:"wrap",marginBottom:7}}>{[["all",Lx.diffAll,""],["Easy",Lx.easy,"#2ECC71"],["Medium",Lx.medium,"#F39C12"],["Advanced",Lx.hard,"#E74C3C"]].map(([v,l,col])=>(<button key={v} onClick={()=>setLvlF(v)} style={{borderRadius:13,padding:"3px 8px",fontSize:9,background:lvlF===v?col||"#FF6B35":"#1A1A2E",border:`1px solid ${lvlF===v?col||"#FF6B35":"#252535"}`,color:lvlF===v?"#fff":"#555577",cursor:"pointer",fontFamily:"inherit"}}>{l}</button>))}<button onClick={()=>setTypF("all")} style={{borderRadius:13,padding:"3px 8px",fontSize:9,background:typF==="all"?"#FF6B35":"#1A1A2E",border:`1px solid ${typF==="all"?"#FF6B35":"#252535"}`,color:typF==="all"?"#fff":"#555577",cursor:"pointer",fontFamily:"inherit"}}>{Lx.typeAll}</button>{Object.entries(Lx.TN).map(([k,v])=>(<button key={k} onClick={()=>setTypF(k)} style={{borderRadius:13,padding:"3px 8px",fontSize:9,background:typF===k?(TC[k]||"#888"):"#1A1A2E",border:`1px solid ${typF===k?(TC[k]||"#888"):"#252535"}`,color:typF===k?"#fff":"#555577",cursor:"pointer",fontFamily:"inherit"}}>{v}</button>))}</div><div style={{fontSize:9,color:"#333355",marginBottom:6}}>{list.length} / {T.length}</div></div>{sub==="favs"&&favs.length===0?(<div style={{textAlign:"center",padding:"36px 16px",color:"#444466"}}><div style={{fontSize:30,marginBottom:7}}>⭐</div><div style={{fontSize:12}}>{Lx.noFavs}</div></div>):(<div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(138px,1fr))",gap:7,padding:"0 11px 20px"}}>{list.map(t=>{const d=t[lang],isFav=favs.includes(t.id),inCmp=cmp.find(x=>x.id===t.id);return(<div key={t.id} onClick={()=>setSel(t)} style={{background:inCmp?"#1A2A1A":"#1A1A2E",border:`1px solid ${inCmp?"#4ECDC4":"#252535"}`,borderRadius:10,padding:"11px 10px 9px",cursor:"pointer",position:"relative"}} onMouseEnter={e=>{e.currentTarget.style.borderColor=cc(t)}} onMouseLeave={e=>{e.currentTarget.style.borderColor=inCmp?"#4ECDC4":"#252535"}}><div style={{position:"absolute",top:5,left:5,display:"flex",gap:3}}><button onClick={e=>{e.stopPropagation();setFavs(f=>f.includes(t.id)?f.filter(x=>x!==t.id):[...f,t.id]);}} style={{background:"transparent",border:"none",fontSize:10,padding:0,cursor:"pointer",opacity:isFav?1:.2}}>⭐</button><button onClick={e=>{e.stopPropagation();setCmp(c=>c.find(x=>x.id===t.id)?c.filter(x=>x.id!==t.id):c.length<2?[...c,t]:[c[1],t]);}} style={{background:"transparent",border:"none",fontSize:10,padding:0,cursor:"pointer",opacity:inCmp?1:.2}}>⚖️</button></div><div style={{fontSize:20,width:34,height:34,background:`${cc(t)}22`,borderRadius:8,display:"flex",alignItems:"center",justifyContent:"center",marginBottom:6}}>{t.icon}</div><div style={{fontWeight:700,fontSize:10,marginBottom:2,lineHeight:1.4}}>{t.name}</div><div style={{fontSize:9,color:"#555588",lineHeight:1.5,marginBottom:5}}>{d.short}</div><div style={{display:"flex",gap:3,flexWrap:"wrap"}}><span style={{background:`${cc(t)}22`,color:cc(t),fontSize:8,padding:"1px 5px",borderRadius:5}}>{Lx.CN[t.cat]||t.cat}</span><span style={{background:`${TC[t.type]}22`,color:TC[t.type],fontSize:8,padding:"1px 5px",borderRadius:5}}>{Lx.TN[t.type]}</span><span style={{background:`${dc(d.lvl)}22`,color:dc(d.lvl),fontSize:8,padding:"1px 5px",borderRadius:5}}>{Lx.LN[d.lvl]||d.lvl}</span></div></div>);})}</div>)}</>)}</div>);
+}
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<App />);
+</script>
+</body>
+</html>
